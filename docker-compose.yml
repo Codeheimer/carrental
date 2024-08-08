@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  db:
+    container_name: carrentaldb
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: carrental
+      POSTGRES_PASSWORD: carrental
+      POSTGRES_DB: carrentaldb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
