@@ -10,6 +10,7 @@ import java.util.List;
 
 @Service
 public class VehicleService {
+
     private final VehicleRepository vehicleRepository;
 
     @Autowired
@@ -17,13 +18,17 @@ public class VehicleService {
         this.vehicleRepository = vehicleRepository;
     }
 
-    public List<Vehicle> filter(final VehicleFilter vehicleFilter) {
-        //TODO: Use the filter
-        return vehicleRepository.findAll();
+    public List<Vehicle> filter(final VehicleFilter filter) {
+        return vehicleRepository.filter(
+            filter.make(),
+            filter.model(),
+            filter.year(),
+            filter.engineDisplacement(),
+            filter.seater()
+        );
     }
 
     public Vehicle save(final Vehicle vehicle) {
-        vehicleRepository.save(vehicle);
-        return vehicle;
+        return vehicleRepository.save(vehicle);
     }
 }

@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 
 @Entity
 public class LookUp extends PersistentEntity {
+
+    private Long parent;
     private LookUpType type;
 
     private String value;
@@ -18,6 +20,21 @@ public class LookUp extends PersistentEntity {
         this.type = type;
         this.value = value;
         this.label = label;
+    }
+
+    public LookUp(final Long parent, final LookUpType type, final String value, final String label){
+        this.parent = parent;
+        this.type = type;
+        this.value = value;
+        this.label = label;
+    }
+
+    public Long getParent() {
+        return parent;
+    }
+
+    public void setParent(final Long parent) {
+        this.parent = parent;
     }
 
     public LookUpType getType() {
