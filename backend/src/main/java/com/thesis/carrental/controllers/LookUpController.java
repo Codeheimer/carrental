@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,13 +25,13 @@ public class LookUpController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<LookUp>> getByType(LookUpFilter filter) {
+    public ResponseEntity<List<LookUp>> getByType(@RequestBody LookUpFilter filter) {
         return ResponseEntity.ok(lookUpService.fetchByTypes(filter));
     }
 
     @PostMapping("/")
-    public ResponseEntity<?> save(final LookUp lookUp) {
-        lookUpService.saveLookUp(lookUp.getType(), lookUp.getValue(), lookUp.getLabel());
+    public ResponseEntity<?> save(@RequestBody final LookUp lookUp) {
+        lookUpService.saveLookUp(lookUp);
         return ResponseEntity.ok().build();
     }
 }

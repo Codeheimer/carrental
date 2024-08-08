@@ -2,10 +2,8 @@ package com.thesis.carrental.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "vehicles")
 public class Vehicle extends PersistentEntity {
 
     private String make;
@@ -14,12 +12,22 @@ public class Vehicle extends PersistentEntity {
 
     private String year;
 
-    @Column(name = "trim_level")
-    private String trimLevel;
-
-    private String trans;
+    @Column(name="engine_displacement")
+    private String engineDisplacement;
 
     private int seater;
+
+    private Long owner;
+
+    public Vehicle(){}
+
+    public Vehicle(final String make, final String model, final String year, final String engineDisplacement, final int seater){
+        this.make = make;
+        this.model = model;
+        this.year = year;
+        this.engineDisplacement = engineDisplacement;
+        this.seater = seater;
+    }
 
     public String getMake() {
         return make;
@@ -45,20 +53,12 @@ public class Vehicle extends PersistentEntity {
         this.year = year;
     }
 
-    public String getTrimLevel() {
-        return trimLevel;
+    public String getEngineDisplacement() {
+        return engineDisplacement;
     }
 
-    public void setTrimLevel(final String trimLevel) {
-        this.trimLevel = trimLevel;
-    }
-
-    public String getTrans() {
-        return trans;
-    }
-
-    public void setTrans(final String trans) {
-        this.trans = trans;
+    public void setEngineDisplacement(final String engineDisplacement) {
+        this.engineDisplacement = engineDisplacement;
     }
 
     public int getSeater() {
@@ -67,5 +67,13 @@ public class Vehicle extends PersistentEntity {
 
     public void setSeater(final int seater) {
         this.seater = seater;
+    }
+
+    public Long getOwner() {
+        return owner;
+    }
+
+    public void setOwner(final Long owner) {
+        this.owner = owner;
     }
 }
