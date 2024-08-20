@@ -23,11 +23,11 @@ public class VehicleController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<?> fetch(@RequestBody final VehicleFilter vehicleFilter) {
+    public ResponseEntity<?> fetch(final VehicleFilter vehicleFilter) {
         return ResponseEntity.ok(vehicleService.filter(vehicleFilter));
     }
 
-    @PostMapping("/")
+    @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody final Vehicle vehicle) {
         final Vehicle saved = vehicleService.save(vehicle);
         return ResponseEntity.ok(saved);
