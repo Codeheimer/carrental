@@ -1,8 +1,15 @@
 import Link from "next/link";
+import HeaderLink, { HeadLink } from "./header/headerLink";
 
-export default function Header(){
+export default function Header() {
+    const links: HeadLink[] = [
+        {label:"Home",path:"/"},
+        {label:"Add Listing",path:"/vehicle/new"},
+        {label:"Login",path:"/login"}
+    ];
     return (<nav className="header flex justify-center items-center">
-    <Link className="mx-1" href="/">Home</Link>
-    <Link className="mx-1" href="/vehicle/new">Add Listing</Link>
+        {links.map((link,key) => 
+            <HeaderLink key={key} label={link.label} path={link.path} />
+        )}
     </nav>)
 }
