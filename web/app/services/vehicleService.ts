@@ -14,7 +14,7 @@ export interface Vehicle {
 
 export const saveVehicle = async (vehicle: Vehicle): Promise<Vehicle> => {
     try {
-        const URL = process.env.BASE_URI + process.env.VEHICLE_SAVE_API;
+        const URL = process.env.BASE_URI as string + process.env.VEHICLE_SAVE_API;
 
         const response = await axios.post<Vehicle>(URL, vehicle, {
             headers: {

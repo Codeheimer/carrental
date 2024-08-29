@@ -1,11 +1,46 @@
 'use client';
 
 import { useState } from "react";
-import AlertError, { defaultErrorDetails, ErrorDetails } from "../components/alerts/alertError";
+import AlertError, { defaultErrorDetails, ErrorDetailsImpl } from "../components/alerts/alertError";
 import { useRouter } from "next/navigation";
 import Textbox, { TextboxDetails } from "../components/fields/textbox";
+import GenericButton, { ButtonDetails } from "../components/fields/genericButton";
 
 export default function LoginPage() {
+    const router = useRouter();
+    const [login, setLogin] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState(defaultErrorDetails);
+    
+
+
+    const attemptLogin = (event: React.FormEvent): void => {
+        event.preventDefault();
+        setError(defaultErrorDetails);
+        console.log(login, password);
+
+
+        //showError("Error", "Incorrect password!");
+    }
+
+    const showError = (title: string, description: string): void => {
+        setError(new ErrorDetailsImpl(title, description));
+    }
+
+    const hasError = (): boolean => {
+        return error.description.length > 0 && error.title.length > 0
+    }
+
+    const handleRegister = (): void => {
+        router.push("/register")
+    }
+
+
+    const registerButton: ButtonDetails = {
+        label: "Register",
+        type: "button",
+        onClickAction: handleRegister
+    }
 
     const passwordField: TextboxDetails = {
         label: "Password",
@@ -23,30 +58,9 @@ export default function LoginPage() {
         isRequired: true
     }
 
-    const router = useRouter();
-    const [login, setLogin] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState(defaultErrorDetails);
-
-
-    const attemptLogin = (event: React.FormEvent): void => {
-        event.preventDefault();
-        setError(defaultErrorDetails);
-        console.log(login, password);
-
-        showError("Error", "Incorrect password!");
-    }
-
-    const showError = (title: string, description: string): void => {
-        setError({ title: title, description: description });
-    }
-
-    const hasError = (): boolean => {
-        return error.description.length > 0 && error.title.length > 0
-    }
-
-    const handleRegister = (): void => {
-        router.push("/register")
+    const loginButton: ButtonDetails = {
+        label: "Login",
+        type: "submit"
     }
 
     return (
@@ -57,14 +71,8 @@ export default function LoginPage() {
                     <Textbox {...emailField} />
                     <Textbox {...passwordField} />
                     <div className="my-4">
-                        <button type="submit" className="cursor-pointer transition-all bg-blue-500 text-white px-6 py-2 m-3 rounded-lg
- border-blue-600">
-                            Login
-                        </button>
-                        <button type="button" onClick={handleRegister} className="cursor-pointer transition-all bg-blue-500 text-white px-6 py-2 m-3 rounded-lg
- border-blue-600">
-                            Register
-                        </button>
+                        <GenericButton {...loginButton} />
+                        <GenericButton {...registerButton} />
                     </div>
                 </div>
             </form>

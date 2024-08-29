@@ -1,4 +1,4 @@
-import { isAuthenticated } from "@/app/services/authenticationService";
+import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
 
@@ -8,12 +8,17 @@ interface AuthenticatedRouteProps {
 
 export default function AuthenticatedPage({ children }: AuthenticatedRouteProps): JSX.Element {
     const router = useRouter();
-
+    const { authenticationService } = useGlobalServiceStore();
     useEffect(() => {
-        if (!isAuthenticated()) {
-            router.push("/login");
+        const checkAuthenticated = async () => {
+            const response = await authenticationService.isAuthenticated();
+            if (!response) {
+                console.log("NOT AUTHENTICATED!");
+                router.push("/login");
+            }
         }
-    }, [router]);
+        checkAuthenticated();
+    }, [router, authenticationService]);
 
     return <>{children}</>
 }

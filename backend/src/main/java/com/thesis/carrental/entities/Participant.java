@@ -10,13 +10,17 @@ import java.time.Instant;
 @Table(name = "participants")
 public class Participant extends PersistentEntity {
 
-    @Column(name="give_name")
-    private String givenName;
+    @Column(name="first_name")
+    private String firstName;
 
-    @Column(name="family_name")
-    private String familyName;
+    @Column(name="last_name")
+    private String lastName;
 
     private Instant birthdate;
+
+    private String gender;
+
+    private String address;
 
     private String email;
 
@@ -24,20 +28,20 @@ public class Participant extends PersistentEntity {
 
     private String roles;
 
-    public String getGivenName() {
-        return givenName;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setGivenName(final String givenName) {
-        this.givenName = givenName;
+    public void setFirstName(final String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getFamilyName() {
-        return familyName;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setFamilyName(final String familyName) {
-        this.familyName = familyName;
+    public void setLastName(final String lastName) {
+        this.lastName = lastName;
     }
 
     public Instant getBirthdate() {
@@ -46,6 +50,22 @@ public class Participant extends PersistentEntity {
 
     public void setBirthdate(final Instant birthdate) {
         this.birthdate = birthdate;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(final String gender) {
+        this.gender = gender;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(final String address) {
+        this.address = address;
     }
 
     public String getEmail() {
