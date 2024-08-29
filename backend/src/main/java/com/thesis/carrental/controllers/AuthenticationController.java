@@ -1,6 +1,7 @@
 package com.thesis.carrental.controllers;
 
 import com.thesis.carrental.dtos.AuthenticationRequest;
+import com.thesis.carrental.dtos.RegistrationResponse;
 import com.thesis.carrental.entities.Participant;
 import com.thesis.carrental.services.JWTService;
 import com.thesis.carrental.services.ParticipantUserDetailsService;
@@ -36,11 +37,11 @@ public class AuthenticationController {
     }
 
     @PostMapping("/addNewUser")
-    public ResponseEntity<?> addNewUser(@RequestBody Participant participant) {
+    public ResponseEntity<RegistrationResponse> addNewUser(@RequestBody Participant participant) {
         try{
             return ResponseEntity.ok(participantUserDetailsService.addUser(participant));
         }catch (Exception e){
-            return ResponseEntity.badRequest().body("Failed to add user, reason: "+e.getMessage());
+            return ResponseEntity.badRequest().body(new RegistrationResponse("Failed to add user, reason: "+e.getMessage()));
         }
     }
 

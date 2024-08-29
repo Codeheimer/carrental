@@ -83,9 +83,16 @@ const cards = [
 ];
 
 export default function ResultsTable() {
-    return (<div className="w-5/6 flex justify-center h-full flex-wrap p-1">
+    /*
+
+    <div className="w-5/6 m-6 flex justify-center h-full flex-wrap p-1">
+        
+    </div>
+    */
+    return (
+    <div className="m-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
         {cards.map(card =>
-            (<Card extraClassNames={'mx-5'} key={card.id} title={card.title} description={card.description} owner={card.owner} age={card.age} />)
+            (<Card key={card.id} title={card.title} description={card.description} owner={card.owner} age={card.age} />)
         )}
-    </div>)
+      </div>)
 }

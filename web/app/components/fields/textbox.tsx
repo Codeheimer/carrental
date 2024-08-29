@@ -1,16 +1,14 @@
 import { ChangeEvent } from "react"
+import { Field } from "./field"
 
 
-export interface TextboxDetails {
-    label: string,
+export interface TextboxDetails extends Field {
     type: string
-    name: string,
-    onChangeEvent: (event: ChangeEvent<HTMLInputElement>) => void,
-    isRequired?: boolean
+    onChangeEvent?: (event: ChangeEvent<HTMLInputElement>) => void
 }
 
 export default function Textbox(details: TextboxDetails) {
-    return (<div>
+    return (<div className="m-3">
         <label htmlFor={details.name} className="block text-gray-800 font-semibold text-sm"
         >{details.label}</label
         >

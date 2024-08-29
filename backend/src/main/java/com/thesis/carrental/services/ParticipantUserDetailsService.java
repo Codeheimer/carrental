@@ -1,5 +1,6 @@
 package com.thesis.carrental.services;
 
+import com.thesis.carrental.dtos.RegistrationResponse;
 import com.thesis.carrental.entities.Participant;
 import com.thesis.carrental.repositories.ParticipantRepository;
 import com.thesis.carrental.security.ParticipantUserDetails;
@@ -29,9 +30,9 @@ public class ParticipantUserDetailsService implements UserDetailsService {
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 
-    public String addUser(Participant participant) {
+    public RegistrationResponse addUser(Participant participant) {
         participant.setPassword(encoder.encode(participant.getPassword()));
         participantRepository.save(participant);
-        return "User Added Successfully";
+        return new RegistrationResponse("User Added Successfully");
     }
 }
