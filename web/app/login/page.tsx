@@ -5,22 +5,34 @@ import AlertError, { defaultErrorDetails, ErrorDetailsImpl } from "../components
 import { useRouter } from "next/navigation";
 import Textbox, { TextboxDetails } from "../components/fields/textbox";
 import GenericButton, { ButtonDetails } from "../components/fields/genericButton";
+import useGlobalServiceStore from "../stores/globalServiceStore";
+import { LoginCredentials } from "../services/authenticationService";
+import useAuthStore from "../stores/authStore";
 
 export default function LoginPage() {
     const router = useRouter();
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(defaultErrorDetails);
-    
-
+    const { authenticationService } = useGlobalServiceStore();
+    const doLogin = useAuthStore((state) => state.login);
 
     const attemptLogin = (event: React.FormEvent): void => {
         event.preventDefault();
         setError(defaultErrorDetails);
         console.log(login, password);
 
-
-        //showError("Error", "Incorrect password!");
+        authenticationService.generateToken({ login, password } as LoginCredentials).then((response) => {
+            const token = response.token;
+            if (token) {
+                console.log("saving token ", token)
+                authenticationService.saveToken(token);
+                router.push("/")
+                doLogin();
+            } else {
+                showError("Error", response.message)
+            }
+        });
     }
 
     const showError = (title: string, description: string): void => {

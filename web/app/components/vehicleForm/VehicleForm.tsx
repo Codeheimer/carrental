@@ -1,9 +1,13 @@
 'use client';
 
-import { saveVehicle, Vehicle } from "@/app/services/vehicleService";
+import { Vehicle } from "@/app/services/vehicleService";
 import AuthenticatedPage from "../security/authenticatedPage";
+import Textbox, { createTextboxDetails } from "../fields/textbox";
+import GenericButton, { createButtonDetails } from "../fields/genericButton";
+import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 
 export default function AddNewVehicle() {
+    const { vehicleService, authenticationService } = useGlobalServiceStore();
 
     const save = (event: React.FormEvent): void => {
         event.preventDefault();
@@ -16,91 +20,19 @@ export default function AddNewVehicle() {
 
         console.log(JSON.stringify(jsonData));
 
-        saveVehicle(jsonData as Vehicle)
+        vehicleService.save(jsonData as Vehicle,authenticationService.getToken());
     };
-
 
     return (<AuthenticatedPage>
         <div className="m-24 flex items-center flex-col">
             <form onSubmit={save}>
-                <div>
-                    <label htmlFor="inputname" className="block text-gray-800 font-semibold text-sm"
-                    >Make</label
-                    >
-                    <div className="mt-2">
-                        <input
-                            type="text"
-                            name="make"
-                            className="block w-56 rounded-md py-1.5 px-2 ring-1 ring-inset ring-gray-400 focus:text-gray-800"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label htmlFor="inputname" className="block text-gray-800 font-semibold text-sm"
-                    >Model</label
-                    >
-                    <div className="mt-2">
-                        <input
-                            type="text"
-                            name="model"
-                            className="block w-56 rounded-md py-1.5 px-2 ring-1 ring-inset ring-gray-400 focus:text-gray-800"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label htmlFor="inputname" className="block text-gray-800 font-semibold text-sm"
-                    >Year</label
-                    >
-                    <div className="mt-2">
-                        <input
-                            type="text"
-                            name="year"
-                            className="block w-56 rounded-md py-1.5 px-2 ring-1 ring-inset ring-gray-400 focus:text-gray-800"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label htmlFor="inputname" className="block text-gray-800 font-semibold text-sm"
-                    >Engine Displacement</label
-                    >
-                    <div className="mt-2">
-                        <input
-                            type="text"
-                            name="engineDisplacement"
-                            className="block w-56 rounded-md py-1.5 px-2 ring-1 ring-inset ring-gray-400 focus:text-gray-800"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label htmlFor="inputname" className="block text-gray-800 font-semibold text-sm"
-                    >Seater</label
-                    >
-                    <div className="mt-2">
-                        <input
-                            type="text"
-                            name="seater"
-                            className="block w-56 rounded-md py-1.5 px-2 ring-1 ring-inset ring-gray-400 focus:text-gray-800"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label htmlFor="inputname" className="block text-gray-800 font-semibold text-sm"
-                    >Description</label
-                    >
-                    <div className="mt-2">
-                        <input
-                            type="text"
-                            name="description"
-                            className="block w-56 rounded-md py-1.5 px-2 ring-1 ring-inset ring-gray-400 focus:text-gray-800"
-                        />
-                    </div>
-                </div>
-                <div className="my-4">
-                    <button type="submit" className="cursor-pointer transition-all bg-blue-500 text-white px-6 py-2 rounded-lg
- border-blue-600">
-                        Add Listing
-                    </button>
-                </div>
+                <Textbox {...createTextboxDetails("Make", "make", true)} />
+                <Textbox {...createTextboxDetails("Model", "model", true)} />
+                <Textbox {...createTextboxDetails("Year", "year", true)} />
+                <Textbox {...createTextboxDetails("Engine Displacement", "engineDisplacement", true)} />
+                <Textbox {...createTextboxDetails("Seater", "seater", true)} />
+                <Textbox {...createTextboxDetails("Description", "description", true)} />
+                <GenericButton {...createButtonDetails("Add Listing", "submit")} />
             </form>
         </div>
     </AuthenticatedPage>)

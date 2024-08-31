@@ -1,4 +1,6 @@
-import axios from 'axios';
+import { AxiosRequestConfig } from 'axios';
+import { BaseService } from './baseService';
+import useGlobalServiceStore from '../stores/globalServiceStore';
 
 export interface Vehicle {
     make: string
@@ -12,18 +14,31 @@ export interface Vehicle {
     longitude: number
 }
 
-export const saveVehicle = async (vehicle: Vehicle): Promise<Vehicle> => {
-    try {
-        const URL = process.env.BASE_URI as string + process.env.VEHICLE_SAVE_API;
+export interface VehicleSaveResponse {
 
-        const response = await axios.post<Vehicle>(URL, vehicle, {
-            headers: {
-                'Content-Type': 'application/json'
+}
+
+export interface VehicleService {
+    save: (vehicle: Vehicle, token: string | null) => VehicleSaveResponse
+}
+
+export class VehicleServiceImpl extends BaseService implements VehicleService {
+    private SAVE = process.env.VEHICLE_SAVE_API;
+
+    public save = async (vehicle: Vehicle, token: string | null): Promise<VehicleSaveResponse> => {
+        try {
+            const URL = `${this.getBaseURL()}${this.SAVE}`;
+            const axiosConfig: AxiosRequestConfig = {
+                method: 'POST',
+                headers: this.getHeaders(token),
+                data: { ...vehicle }
             }
-        });
-        return response.data;
-    } catch (error) {
-        console.error('error:', error);
-        throw error;
-    }
-};
+            const response = await this.doRequest<VehicleSaveResponse>(URL, axiosConfig);
+
+            return response;
+        } catch (error) {
+            console.error('error:', error);
+            throw error;
+        }
+    };
+}

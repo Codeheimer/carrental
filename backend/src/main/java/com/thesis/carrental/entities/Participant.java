@@ -10,10 +10,10 @@ import java.time.Instant;
 @Table(name = "participants")
 public class Participant extends PersistentEntity {
 
-    @Column(name="first_name")
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name="last_name")
+    @Column(name = "last_name")
     private String lastName;
 
     private Instant birthdate;
@@ -21,6 +21,9 @@ public class Participant extends PersistentEntity {
     private String gender;
 
     private String address;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
     private String email;
 
@@ -66,6 +69,14 @@ public class Participant extends PersistentEntity {
 
     public void setAddress(final String address) {
         this.address = address;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(final String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getEmail() {
