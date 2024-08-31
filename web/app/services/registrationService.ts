@@ -1,3 +1,4 @@
+import { AxiosRequestConfig } from "axios";
 import { RegistrationDetails } from "../register/page";
 import { BaseService } from "./baseService";
 
@@ -6,22 +7,23 @@ interface RegistrationResponse {
 }
 
 export interface RegistrationService {
-    register: (details: RegistrationDetails) => Promise<string>
+    register: (details: RegistrationDetails | FormData, headers?: Record<string, string>) => Promise<string>,
+    getHeaders: () => Record<string, string>
 }
 
 export class RegistrationServiceImpl extends BaseService implements RegistrationService {
     private REGISTER = process.env.REGISTER;
 
-    public register = async (details: RegistrationDetails): Promise<string> => {
+    public register = async (details: RegistrationDetails | FormData): Promise<string> => {
         const URL = `${this.getBaseURL()}${this.REGISTER}`;
-
-        const response = await this.doRequest<RegistrationResponse>(URL, {
+        const axiosConfig: AxiosRequestConfig = {
             method: 'POST',
-            headers: this.getHeaders(),
-            data: { ...details }
+            headers: { 'Content-Type': 'multipart/form-data' },
+            data: details
 
-        });
-        
+        }
+        const response = await this.doRequest<RegistrationResponse>(URL, axiosConfig);
+
         return response.message;
     }
 }

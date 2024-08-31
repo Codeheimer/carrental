@@ -28,7 +28,8 @@ public class VehicleService {
         );
     }
 
-    public Vehicle save(final Vehicle vehicle) {
+    public Vehicle save(final Vehicle vehicle, final Long owner) {
+        vehicle.setOwner(owner);
         return vehicleRepository.save(vehicle);
     }
 }

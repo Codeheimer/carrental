@@ -1,22 +1,26 @@
 package com.thesis.carrental.controllers;
 
 import com.thesis.carrental.dtos.AuthenticationRequest;
+import com.thesis.carrental.dtos.AuthenticationResponse;
+import com.thesis.carrental.dtos.RegistrationRequest;
 import com.thesis.carrental.dtos.RegistrationResponse;
-import com.thesis.carrental.entities.Participant;
+import com.thesis.carrental.dtos.TokenVerifyResponse;
 import com.thesis.carrental.services.JWTService;
 import com.thesis.carrental.services.ParticipantUserDetailsService;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/auth")
@@ -36,10 +40,12 @@ public class AuthenticationController {
         return "Welcome this endpoint is not secure";
     }
 
-    @PostMapping("/addNewUser")
-    public ResponseEntity<RegistrationResponse> addNewUser(@RequestBody Participant participant) {
+    @PostMapping(value = "/addNewUser", consumes = {"multipart/form-data"})
+    public ResponseEntity<RegistrationResponse> addNewUser(@RequestPart("registrationData") RegistrationRequest registrationRequest,
+        @RequestPart("identification") final MultipartFile identification,
+        @RequestPart("businessPermit") final MultipartFile businessPermit) {
         try{
-            return ResponseEntity.ok(participantUserDetailsService.addUser(participant));
+            return ResponseEntity.ok(participantUserDetailsService.addUser(registrationRequest,identification,businessPermit));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(new RegistrationResponse("Failed to add user, reason: "+e.getMessage()));
         }
@@ -58,19 +64,23 @@ public class AuthenticationController {
     }
 
     @PostMapping("/generateToken")
-    public String authenticateAndGetToken(@RequestBody AuthenticationRequest authenticationRequest) {
+    public ResponseEntity<AuthenticationResponse> authenticateAndGetToken(@RequestBody AuthenticationRequest authenticationRequest) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(authenticationRequest.login(), authenticationRequest.password())
         );
         if (authentication.isAuthenticated()) {
-            return jwtService.generateToken(authenticationRequest.login());
+            return ResponseEntity.ok(new AuthenticationResponse(jwtService.generateToken(authenticationRequest.login()),null));
         } else {
-            throw new UsernameNotFoundException("Invalid user request!");
+            return ResponseEntity.badRequest().body(new AuthenticationResponse(null, "Login Credentials Invalid"));
         }
     }
 
     @PostMapping("/verifyToken")
-    public boolean verifyToken(@RequestBody AuthenticationRequest authenticationRequest) {
-        return jwtService.validateToken(authenticationRequest.token());
+    public ResponseEntity<TokenVerifyResponse> verifyToken(@RequestBody AuthenticationRequest authenticationRequest) {
+        try{
+            return ResponseEntity.ok(new TokenVerifyResponse(jwtService.validateToken(authenticationRequest.token()),"Token valid"));
+        }catch (ExpiredJwtException e){
+            return ResponseEntity.ok(new TokenVerifyResponse(false,"Token expired"));
+        }
     }
 }

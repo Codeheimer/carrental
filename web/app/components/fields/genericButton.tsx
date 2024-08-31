@@ -1,9 +1,16 @@
-import { ButtonHTMLAttributes } from "react"
+'use client';
 
 export interface ButtonDetails {
     label: string,
     type: "submit" | "reset" | "button",
     onClickAction?: React.MouseEventHandler<HTMLButtonElement>
+}
+
+export const createButtonDetails = (
+    label: string,
+    type: "submit" | "reset" | "button",
+    onClickAction: React.MouseEventHandler<HTMLButtonElement> = () => { }): ButtonDetails => {
+    return { label, type, onClickAction }
 }
 
 export default function GenericButton(details: ButtonDetails) {
