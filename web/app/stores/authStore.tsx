@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 interface AuthStore {
-  loggedIn: boolean,
+  loggedIn: boolean;
   login: () => void;
   logout: () => void;
 }
