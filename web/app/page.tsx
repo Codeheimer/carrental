@@ -13,14 +13,14 @@ export default function Home() {
       if (response.isValid) {
         console.log("has existing token, do login")
         login();
-      }else{
+      } else {
         console.log("no existing token. no login")
       }
     })
   });
   return (
-    <>
+    <div className="flex">
       <VehicleFilterModule />
-    </>
+    </div>
   );
 }
