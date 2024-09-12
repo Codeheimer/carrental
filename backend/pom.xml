@@ -30,6 +30,7 @@
 		<java.version>21</java.version>
 		<jjwt.version>0.11.5</jjwt.version>
 		<slf4j.version>2.0.16</slf4j.version>
+		<apache.commons.lang3.version>3.17.0</apache.commons.lang3.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -87,6 +88,12 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4j.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${apache.commons.lang3.version}</version>
+		</dependency>
+
 
 	</dependencies>
 

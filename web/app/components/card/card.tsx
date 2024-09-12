@@ -1,7 +1,12 @@
-import { truncate } from "../../utilities/stringUtils";
+'use client';
+
+import { useRouter } from "next/navigation";
+import { beautifyVehicleAge, truncate } from "../../utilities/stringUtils";
 import './style.css';
+import { MouseEvent, MouseEventHandler } from "react";
 
 interface CardDetails {
+    id: number
     title: string
     description: string
     owner: string
@@ -10,10 +15,16 @@ interface CardDetails {
 
 const TRUNCATE_LENGTH = 50;
 
-export default function Card({ title, description, owner, age }: CardDetails) {
+export default function Card({ id, title, description, owner, age }: CardDetails) {
+    const router = useRouter();
+
+    const handleViewListing = (event: MouseEvent): void => {
+        router.push(`/vehicle/listing/${id}`);
+    }
+
     return (
         <div className="mx-auto">
-            <a href="#" className="relative inline-block duration-300 ease-in-out transition-transform transform hover:-translate-y-2 w-full">
+            <a onClick={handleViewListing} className="relative inline-block duration-300 ease-in-out transition-transform transform hover:-translate-y-2 w-full">
                 <div className="shadow p-4 rounded-lg bg-white">
                     <div className="flex justify-center relative rounded-lg overflow-hidden h-52">
                         <div className="transition-transform duration-500 transform ease-in-out hover:scale-110 w-full">
@@ -27,13 +38,13 @@ export default function Card({ title, description, owner, age }: CardDetails) {
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 grid-rows-1 gap-4 mt-4 min-h-14 min-w-80">
+                    <div className="grid grid-cols-1 grid-rows-1 gap-4 my-4 min-h-14 min-w-80">
                         <p className="inline-flex flex-col xl:flex-row xl:items-center text-gray-800">
                             {truncate(description, TRUNCATE_LENGTH)}
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 mt-4">
+                    <div className="flex justify-between font-light text-xs">
                         <div className="flex items-center">
                             <div className="relative">
                                 <div className="rounded-full w-6 h-6 md:w-8 md:h-8 bg-gray-200"></div>
@@ -44,18 +55,9 @@ export default function Card({ title, description, owner, age }: CardDetails) {
                                 {owner}
                             </p>
                         </div>
-
-                        <div className="flex justify-end">
-                            <p className="inline-block font-semibold text-primary whitespace-nowrap leading-tight rounded-xl">
-                                <span className="text-sm uppercase">
-                                    $
-                                </span>
-                                <span className="text-lg">3,200</span>/m
-                            </p>
+                        <div className="p-1 m-1">
+                            {beautifyVehicleAge(age)}
                         </div>
-                    </div>
-                    <div className="grid grid-cols-1 mt-4">
-                        {age} days ago
                     </div>
                 </div>
             </a>

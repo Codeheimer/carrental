@@ -37,7 +37,13 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/welcome", "/auth/addNewUser", "/auth/generateToken","/auth/verifyToken").permitAll()
+                .requestMatchers(
+                    "/auth/welcome",
+                    "/auth/addNewUser",
+                    "/auth/generateToken",
+                    "/auth/verifyToken",
+                    "/api/vehicle/",
+                    "/api/vehicle/{id}").permitAll()
                 .requestMatchers("/auth/user/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
                 .anyRequest().authenticated() // Protect all other endpoints

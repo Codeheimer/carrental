@@ -15,12 +15,12 @@ public class ParticipantService {
         this.participantRepository = participantRepository;
     }
 
-    public Participant addUser(final Participant participant){
-        return participantRepository.save(participant);
-    }
-
     public Participant findParticipantByLogin(final String login){
         return participantRepository.findByLogin(login).orElse(new Participant());
+    }
+
+    public Participant findById(final Long id){
+        return participantRepository.findById(id).orElse(new Participant());
     }
 
 }

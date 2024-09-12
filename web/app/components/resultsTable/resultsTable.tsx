@@ -1,98 +1,26 @@
+import { useEffect } from "react";
 import Card from "../card/card";
+import useVehicleFilteringStore from "@/app/stores/vehicleFilteringStore";
 
-const cards = [
-    {
-        id: 1,
-        title: 'foo',
-        description: 'foo',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 2,
-        title: 'boo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 3,
-        title: 'coo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 4,
-        title: 'boo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 5,
-        title: 'coo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 6,
-        title: 'boo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 7,
-        title: 'coo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 8,
-        title: 'boo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 9,
-        title: 'coo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 10,
-        title: 'boo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 11,
-        title: 'coo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 12,
-        title: 'boo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }, {
-        id: 13,
-        title: 'coo',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam a magna scelerisque, aliquet nunc in, bibendum velit. Nullam vitae gravida lorem, quis efficitur libero.',
-        owner: 'FooBar',
-        age: '3'
-    }
-];
+export interface VehicleResult {
+    id: number
+    title: string
+    description: string
+    owner: string
+    age: string
+    status: string
+}
 
 export default function ResultsTable() {
-    /*
+    const results = useVehicleFilteringStore((state) => state.results);
 
-    <div className="w-5/6 m-6 flex justify-center h-full flex-wrap p-1">
-        
-    </div>
-    */
+    useEffect(() => {
+        console.log("rerendering results")
+    }, [results]);
     return (
-    <div className="m-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
-        {cards.map(card =>
-            (<Card key={card.id} title={card.title} description={card.description} owner={card.owner} age={card.age} />)
-        )}
-      </div>)
+        <div className="m-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+            {results.map(card =>
+                (<Card key={card.id} {...card} />)
+            )}
+        </div>)
 }

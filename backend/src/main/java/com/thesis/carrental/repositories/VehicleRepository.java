@@ -16,7 +16,8 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
         "AND ( :model IS NULL OR :model = v.model) " +
         "AND ( :year IS NULL OR :year = v.year) " +
         "AND ( :engineDisplacement IS NULL OR :engineDisplacement = v.engineDisplacement) " +
-        "AND ( :seater is NULL OR :seater = v.seater ) ")
+        "AND ( :seater is NULL OR :seater = v.seater ) " +
+        "AND ( status NOT IN ('MAINTENANCE','RENTED') )")
     List<Vehicle> filter(
         @Param("make") final String make,
         @Param("model") final String model,
@@ -25,4 +26,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
         @Param("seater") final Integer seater
     );
 
+    @Query("SELECT v FROM Vehicle v WHERE :owner = v.owner ")
+    List<Vehicle> byOwner(@Param("owner") final Long owner);
 }
