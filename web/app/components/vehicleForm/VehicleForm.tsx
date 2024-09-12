@@ -5,9 +5,12 @@ import AuthenticatedPage from "../security/authenticatedPage";
 import Textbox, { createTextboxDetails } from "../fields/textbox";
 import GenericButton, { createButtonDetails } from "../fields/genericButton";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
+import { useRouter } from "next/navigation";
+import Textarea, { createTextareaDetails } from "../fields/textarea";
 
 export default function AddNewVehicle() {
     const { vehicleService, authenticationService } = useGlobalServiceStore();
+    const router = useRouter();
 
     const save = (event: React.FormEvent): void => {
         event.preventDefault();
@@ -20,20 +23,27 @@ export default function AddNewVehicle() {
 
         console.log(JSON.stringify(jsonData));
 
-        vehicleService.save(jsonData as Vehicle,authenticationService.getToken());
+        vehicleService.save(jsonData as Vehicle, authenticationService.getToken()).then((response) => {
+            if (response.success) {
+                router.push("/")
+            } else {
+                alert(response.message);
+            }
+        });
     };
 
-    return (<AuthenticatedPage>
-        <div className="m-24 flex items-center flex-col">
+    return (
+        <div className="m-3 flex items-center flex-col">
             <form onSubmit={save}>
+                <Textbox {...createTextboxDetails("Plate Number", "plateNumber", true)} />
                 <Textbox {...createTextboxDetails("Make", "make", true)} />
                 <Textbox {...createTextboxDetails("Model", "model", true)} />
                 <Textbox {...createTextboxDetails("Year", "year", true)} />
                 <Textbox {...createTextboxDetails("Engine Displacement", "engineDisplacement", true)} />
                 <Textbox {...createTextboxDetails("Seater", "seater", true)} />
-                <Textbox {...createTextboxDetails("Description", "description", true)} />
+                <Textbox {...createTextboxDetails("Title", "title", true)} />
+                <Textarea {...createTextareaDetails("Description", "description", true)} />
                 <GenericButton {...createButtonDetails("Add Listing", "submit")} />
             </form>
-        </div>
-    </AuthenticatedPage>)
+        </div>)
 }

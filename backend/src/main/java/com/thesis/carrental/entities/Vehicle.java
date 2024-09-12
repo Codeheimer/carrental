@@ -17,13 +17,19 @@ public class Vehicle extends PersistentEntity {
 
     private int seater;
 
+    private String title;
+
     private String description;
 
     private Long owner;
 
+    private String plateNumber;
+
     private Double latitude;
 
     private Double longitude;
+
+    private String status;
 
     public String getMake() {
         return make;
@@ -65,6 +71,14 @@ public class Vehicle extends PersistentEntity {
         this.seater = seater;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(final String title) {
+        this.title = title;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -81,6 +95,14 @@ public class Vehicle extends PersistentEntity {
         this.owner = owner;
     }
 
+    public String getPlateNumber() {
+        return plateNumber;
+    }
+
+    public void setPlateNumber(final String plateNumber) {
+        this.plateNumber = plateNumber;
+    }
+
     public Double getLatitude() {
         return latitude;
     }
@@ -95,5 +117,13 @@ public class Vehicle extends PersistentEntity {
 
     public void setLongitude(final Double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(final String status) {
+        this.status = status;
     }
 }

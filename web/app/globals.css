@@ -4,11 +4,4 @@
 
 :root {
   font-weight: 600;
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-.footer {
-  color: rgb(88, 87, 87);
 }

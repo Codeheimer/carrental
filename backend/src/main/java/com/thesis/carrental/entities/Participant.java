@@ -102,4 +102,8 @@ public class Participant extends PersistentEntity {
     public void setRoles(final String roles) {
         this.roles = roles;
     }
+
+    public String getDisplayName(){
+        return this.firstName + " " + this.lastName;
+    }
 }

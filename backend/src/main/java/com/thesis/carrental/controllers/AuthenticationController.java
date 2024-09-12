@@ -65,13 +65,17 @@ public class AuthenticationController {
 
     @PostMapping("/generateToken")
     public ResponseEntity<AuthenticationResponse> authenticateAndGetToken(@RequestBody AuthenticationRequest authenticationRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(authenticationRequest.login(), authenticationRequest.password())
-        );
-        if (authentication.isAuthenticated()) {
-            return ResponseEntity.ok(new AuthenticationResponse(jwtService.generateToken(authenticationRequest.login()),null));
-        } else {
-            return ResponseEntity.badRequest().body(new AuthenticationResponse(null, "Login Credentials Invalid"));
+        try{
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authenticationRequest.login(), authenticationRequest.password())
+            );
+            if (authentication.isAuthenticated()) {
+                return ResponseEntity.ok(new AuthenticationResponse(jwtService.generateToken(authenticationRequest.login()),null));
+            } else {
+                return ResponseEntity.badRequest().body(new AuthenticationResponse(null, "Login Credentials Invalid"));
+            }
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new AuthenticationResponse(null, "Error in authentication, reason: "+e.getMessage()));
         }
     }
 

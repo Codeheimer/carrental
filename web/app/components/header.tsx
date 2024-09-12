@@ -8,21 +8,45 @@ import { useEffect, useState } from "react";
 import useAuthStore from "../stores/authStore";
 
 export default function Header() {
-    const links: HeadLink[] = [
+    const defaultLinks: HeadLink[] = [
         { label: "Home", path: "/" },
         { label: "Add your Car", path: "/vehicle/new" }
     ];
 
+    const [links, setLinks] = useState<HeadLink[]>([]);
     const { authenticationService } = useGlobalServiceStore();
     const router = useRouter();
     const loggedIn = useAuthStore((state) => state.loggedIn)
     const doLogout = useAuthStore((state) => state.logout);
+    const login = useAuthStore((state) => state.login);
+
+    useEffect(() => {
+        initializeHeader();
+    }, [loggedIn]);
+
+    const initializeHeader = async () => {
+        const response = await authenticationService.verifyToken();
+        if (response.isValid) {
+            console.log("Setting links with My Listings");
+            setLinks([...defaultLinks, { label: "My Listings", path: "/admin/listings" }]);
+            if (!loggedIn) {
+                login();
+            }
+        } else {
+            console.log("Setting default links");
+            setLinks([...defaultLinks]);
+            if (loggedIn) {
+                doLogout();
+            }
+        }
+    }
 
     const handleLogout = (): void => {
         console.log('removing login');
         authenticationService.clearToken();
         router.push("/")
         doLogout();
+        initializeHeader();
     }
 
     const logout: ButtonDetails = {
@@ -32,7 +56,7 @@ export default function Header() {
     }
 
     return (
-        <nav className="z-50 sticky top-0 bg-white shadow-md flex items-center justify-between px-8 py-02">
+        <nav className="z-50 bg-white sticky top-0 shadow-md flex items-center justify-between px-8 py-02">
             <nav className="nav font-semibold text-lg">
                 <ul className="flex items-center">
                     {links.map((link, key) =>
