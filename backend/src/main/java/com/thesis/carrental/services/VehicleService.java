@@ -8,6 +8,7 @@ import com.thesis.carrental.enums.VehicleStatus;
 import com.thesis.carrental.filters.VehicleFilter;
 import com.thesis.carrental.repositories.VehicleRepository;
 import com.thesis.carrental.utils.DisplayUtil;
+import jakarta.persistence.NoResultException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,8 +33,12 @@ public class VehicleService {
         this.participantService = participantService;
     }
 
-    public Vehicle find(final Long id) {
-        return vehicleRepository.findById(id).orElseThrow();
+    public VehicleResult find(final Long id) {
+        final Optional<Vehicle> vehicle = vehicleRepository.findById(id);
+        if(vehicle.isPresent()) {
+            return this.toResult(vehicle.get());
+        }
+        throw new NoResultException("Vehicle not exists");
     }
 
     public List<VehicleResult> filter(final VehicleFilter filter){
@@ -70,6 +75,7 @@ public class VehicleService {
             vehicle.getTitle(),
             vehicle.getDescription(),
             vehicle.getPlateNumber(),
+            String.valueOf(owner.getId()),
             owner.getDisplayName(),
             DisplayUtil.generateVehicleListingAge(vehicle.getCreationDate()),
             vehicle.getStatus()

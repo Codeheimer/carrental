@@ -7,12 +7,13 @@ interface TokenResponse {
 }
 
 export interface LoginCredentials {
-    login: string
+    email: string
     password: string
     rememberMe?: boolean;
 }
 
 export interface AuthenticationResponse {
+    id: string,
     token: string,
     message: string
 }

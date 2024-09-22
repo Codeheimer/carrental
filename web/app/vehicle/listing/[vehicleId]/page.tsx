@@ -1,14 +1,14 @@
 'use client';
 import GenericButton, { createButtonDetails } from "@/app/components/fields/genericButton";
 import { VehicleResult } from "@/app/components/resultsTable/resultsTable";
-import useChatStore from "@/app/stores/chatStore";
+import useChatStore, { ConversationImpl } from "@/app/stores/chatStore";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 import { useEffect, useState } from "react";
 
 
 export default function VehicleListingModule({ params }: { params: { vehicleId: string } }) {
-    const { chatOpen, toggleChat } = useChatStore();
-    const { vehicleService } = useGlobalServiceStore();
+    const { chatOpen, toggleChat, setCurrentConversation, setConversations, conversations } = useChatStore();
+    const { chatService, vehicleService } = useGlobalServiceStore();
     const [listing, setListing] = useState<VehicleResult>({} as VehicleResult);
     useEffect(() => {
         const fetchVehicle = () => {
@@ -19,8 +19,12 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
         fetchVehicle();
     }, [params.vehicleId, vehicleService])
 
-    const handleInitiateChatWithRenter = () => {
+    const handleInitiateChatWithRenter = (ownerId: string, owner: string) => {
         if (!chatOpen) {
+            const newConversation = new ConversationImpl(0, ownerId, owner, false, "", null, []);
+            setCurrentConversation(newConversation);
+            const updatedConversations = [...conversations, newConversation];
+            setConversations(updatedConversations);
             toggleChat();
         }
     }
@@ -40,7 +44,7 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
             <div>
                 <div className="border-t py-4 mt-7 border-gray-200">
                     <div data-menu className="flex justify-between items-center cursor-pointer">
-                        <GenericButton {...createButtonDetails('Contact Renter', "button", () => handleInitiateChatWithRenter())} />
+                        <GenericButton {...createButtonDetails('Contact Renter', "button", () => handleInitiateChatWithRenter(listing.ownerId, listing.owner))} />
                     </div>
                     <div className="hidden pt-4 text-base leading-normal pr-12 mt-4 text-gray-600 dark:text-gray-300" id="sect">You will be responsible for paying for your own shipping costs for returning your item. Shipping costs are nonrefundable</div>
                 </div>

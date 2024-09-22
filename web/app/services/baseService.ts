@@ -6,7 +6,7 @@ export abstract class BaseService {
     };
 
     protected async doRequest<T>(url: string, config: AxiosRequestConfig): Promise<T> {
-        console.log(`calling ${url} with confing ${JSON.stringify(config)}`)
+        //console.log(`calling ${url} with confing ${JSON.stringify(config)}`)
         try {
             const response: AxiosResponse<T> = await axios({ url, ...config });
             return response.data;
@@ -26,7 +26,7 @@ export abstract class BaseService {
             headers = this.addHeader(headers, 'Authorization', `Bearer ${token}`);
         }
         headers = this.addHeader(headers, 'Content-Type', 'application/json');
-        console.log("Headers", headers);
+        //console.log("Headers", headers);
         return headers;
     }
 

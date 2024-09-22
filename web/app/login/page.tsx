@@ -8,27 +8,28 @@ import GenericButton, { ButtonDetails } from "../components/fields/genericButton
 import useGlobalServiceStore from "../stores/globalServiceStore";
 import { LoginCredentials } from "../services/authenticationService";
 import useAuthStore from "../stores/authStore";
+import useChatStore, { ConversationImpl } from "../stores/chatStore";
 
 export default function LoginPage() {
     const router = useRouter();
-    const [login, setLogin] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(defaultErrorDetails);
     const { authenticationService } = useGlobalServiceStore();
-    const doLogin = useAuthStore((state) => state.login);
+    const { login } = useAuthStore();
+    const { setConversations, setCurrentConversation } = useChatStore();
 
     const attemptLogin = (event: React.FormEvent): void => {
         event.preventDefault();
         setError(defaultErrorDetails);
-        console.log(login, password);
 
-        authenticationService.generateToken({ login, password } as LoginCredentials).then((response) => {
+        authenticationService.generateToken({ email, password } as LoginCredentials).then((response) => {
+            console.log(`LOGIN RESPONSE ${JSON.stringify(response)}`)
             const token = response.token;
             if (token) {
-                console.log("saving token ", token)
                 authenticationService.saveToken(token);
+                login(authenticationService.getToken(), response.id);
                 router.push("/")
-                doLogin();
             } else {
                 showError("Error", response.message)
             }
@@ -66,7 +67,7 @@ export default function LoginPage() {
         label: "Email",
         type: "text",
         name: "email",
-        onChangeEvent: (e) => setLogin(e.target.value),
+        onChangeEvent: (e) => setEmail(e.target.value),
         isRequired: true
     }
 
