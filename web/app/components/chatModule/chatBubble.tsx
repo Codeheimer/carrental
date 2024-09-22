@@ -1,8 +1,7 @@
 import useChatStore from "@/app/stores/chatStore"
 
 export default function ChatBubble() {
-    const toggleChat = useChatStore((state) => state.toggleChat)
-
+    const { toggleChat, notificationCount } = useChatStore();
     return (<button onClick={toggleChat}
         className="fixed bottom-4 right-4 inline-flex items-center justify-center text-sm font-medium disabled:pointer-events-none disabled:opacity-50 border rounded-full w-16 h-16 bg-black hover:bg-gray-700 m-0 cursor-pointer border-gray-200 bg-none p-0 normal-case leading-5 hover:text-gray-900"
         type="button" aria-haspopup="dialog" aria-expanded="false" data-state="closed">
@@ -12,5 +11,10 @@ export default function ChatBubble() {
             <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" className="border-gray-200">
             </path>
         </svg>
+        {notificationCount > 0 &&
+            (<div className="flex justify-center items-center rounded-full absolute -top-[0.10rem] -right-[0.10rem] 
+                h-7 w-7 bg-red-700 text-white text-lg">
+                {notificationCount}
+            </div>)}
     </button>)
 }

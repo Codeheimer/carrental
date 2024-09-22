@@ -44,6 +44,7 @@ public class SecurityConfig {
                     "/auth/verifyToken",
                     "/api/vehicle/",
                     "/api/vehicle/{id}").permitAll()
+                .requestMatchers("mywebsocket/**").permitAll()
                 .requestMatchers("/auth/user/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
                 .anyRequest().authenticated() // Protect all other endpoints

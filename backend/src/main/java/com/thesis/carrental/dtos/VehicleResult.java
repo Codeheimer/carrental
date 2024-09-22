@@ -10,6 +10,7 @@ public record VehicleResult(
     String title,
     String description,
     String plateNumber,
+    String ownerId,
     String owner,
     String age,
     String status

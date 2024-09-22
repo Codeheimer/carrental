@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./components/header";
 import ChatModule from "./components/chatModule/chatModule";
+import ClientAuthenticationInitializer from "./components/security/clientAuthenticationInitializer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,6 +18,7 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
     <html lang="en">
       <body className={inter.className}>
         <main className="flex flex-col">
+          <ClientAuthenticationInitializer />
           <Header />
           {children}
           <ChatModule />

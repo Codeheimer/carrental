@@ -9,18 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@stomp/stompjs": "^7.0.0",
     "axios": "^1.7.4",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
+    "sockjs-client": "^1.6.1",
+    "use-sound": "^4.0.3",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/sockjs-client": "^1.5.4",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8",

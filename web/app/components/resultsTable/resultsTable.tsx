@@ -6,6 +6,7 @@ export interface VehicleResult {
     id: number
     title: string
     description: string
+    ownerId: string
     owner: string
     age: string
     status: string
@@ -13,10 +14,6 @@ export interface VehicleResult {
 
 export default function ResultsTable() {
     const results = useVehicleFilteringStore((state) => state.results);
-
-    useEffect(() => {
-        console.log("rerendering results")
-    }, [results]);
     return (
         <div className="m-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
             {results.map(card =>

@@ -5,7 +5,9 @@ import com.thesis.carrental.dtos.AuthenticationResponse;
 import com.thesis.carrental.dtos.RegistrationRequest;
 import com.thesis.carrental.dtos.RegistrationResponse;
 import com.thesis.carrental.dtos.TokenVerifyResponse;
+import com.thesis.carrental.entities.Participant;
 import com.thesis.carrental.services.JWTService;
+import com.thesis.carrental.services.ParticipantService;
 import com.thesis.carrental.services.ParticipantUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,9 @@ public class AuthenticationController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private ParticipantService participantService;
 
     @GetMapping("/welcome")
     public String welcome() {
@@ -67,15 +72,17 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> authenticateAndGetToken(@RequestBody AuthenticationRequest authenticationRequest) {
         try{
             Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authenticationRequest.login(), authenticationRequest.password())
+                new UsernamePasswordAuthenticationToken(authenticationRequest.email(), authenticationRequest.password())
             );
             if (authentication.isAuthenticated()) {
-                return ResponseEntity.ok(new AuthenticationResponse(jwtService.generateToken(authenticationRequest.login()),null));
+                final String login = authenticationRequest.email();
+                final Participant participant = participantService.findParticipantByLogin(login);
+                return ResponseEntity.ok(new AuthenticationResponse(String.valueOf(participant.getId()),jwtService.generateToken(login),null));
             } else {
-                return ResponseEntity.badRequest().body(new AuthenticationResponse(null, "Login Credentials Invalid"));
+                return ResponseEntity.badRequest().body(new AuthenticationResponse(String.valueOf(0),"", "Login Credentials Invalid"));
             }
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(new AuthenticationResponse(null, "Error in authentication, reason: "+e.getMessage()));
+            return ResponseEntity.badRequest().body(new AuthenticationResponse(String.valueOf(0),"", "Error in authentication, reason: "+e.getMessage()));
         }
     }
 
