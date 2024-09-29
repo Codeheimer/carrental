@@ -22,7 +22,7 @@ export default function ChatWindow() {
 
     const send = (event: React.FormEvent | KeyboardEvent<HTMLInputElement>) => {
         if (currentConversation) {
-            const message = new ChatMessageImpl(currentConversation.id, currentConversation.recipientId.toString(), session.getUserId() as string, draft, new Date().toISOString());
+            const message = new ChatMessageImpl(currentConversation.id, currentConversation.recipientId.toString(), session.userId as string, draft, new Date().toISOString());
             if (event.type === 'keydown') {
                 const keyboardEvent = event as KeyboardEvent<HTMLInputElement>;
                 if (keyboardEvent.key === 'Enter') {

@@ -1,5 +1,6 @@
 package com.thesis.carrental.config;
 
+import com.thesis.carrental.security.CustomAuthenticationProvider;
 import com.thesis.carrental.services.ParticipantUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -65,7 +66,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        CustomAuthenticationProvider authenticationProvider = new CustomAuthenticationProvider(userDetailsService(),passwordEncoder());
         authenticationProvider.setUserDetailsService(userDetailsService());
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;

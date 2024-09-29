@@ -14,11 +14,14 @@ public class ParticipantUserDetails implements UserDetails {
 
     private final String username;
     private final String password;
+
+    private final boolean approved;
     private final List<GrantedAuthority> authorities;
 
     public ParticipantUserDetails(final Participant participant){
         this.username = participant.getEmail();
         this.password = participant.getPassword();
+        this.approved = participant.isApproved();
         this.authorities = Stream.of(participant.getRoles().split(","))
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
@@ -57,6 +60,6 @@ public class ParticipantUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return this.approved;
     }
 }

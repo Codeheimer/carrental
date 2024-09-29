@@ -52,7 +52,7 @@ public class AuthenticationController {
         try{
             return ResponseEntity.ok(participantUserDetailsService.addUser(registrationRequest,identification,businessPermit));
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(new RegistrationResponse("Failed to add user, reason: "+e.getMessage()));
+            return ResponseEntity.badRequest().body(new RegistrationResponse("Failed to add user, reason: "+e.getMessage(),false));
         }
     }
 
@@ -77,21 +77,32 @@ public class AuthenticationController {
             if (authentication.isAuthenticated()) {
                 final String login = authenticationRequest.email();
                 final Participant participant = participantService.findParticipantByLogin(login);
-                return ResponseEntity.ok(new AuthenticationResponse(String.valueOf(participant.getId()),jwtService.generateToken(login),null));
+                return ResponseEntity.ok(new AuthenticationResponse(String.valueOf(participant.getId()),jwtService.generateToken(login),null,isAdmin(participant.getEmail())));
             } else {
-                return ResponseEntity.badRequest().body(new AuthenticationResponse(String.valueOf(0),"", "Login Credentials Invalid"));
+                return ResponseEntity.badRequest().body(new AuthenticationResponse(String.valueOf(0),"", "Login Credentials Invalid",false));
             }
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(new AuthenticationResponse(String.valueOf(0),"", "Error in authentication, reason: "+e.getMessage()));
+            return ResponseEntity.badRequest().body(new AuthenticationResponse(String.valueOf(0),"", "Error in authentication, reason: "+e.getMessage(),false));
         }
     }
 
     @PostMapping("/verifyToken")
     public ResponseEntity<TokenVerifyResponse> verifyToken(@RequestBody AuthenticationRequest authenticationRequest) {
         try{
-            return ResponseEntity.ok(new TokenVerifyResponse(jwtService.validateToken(authenticationRequest.token()),"Token valid"));
+            final String token = authenticationRequest.token();
+            final boolean isValid = jwtService.validateToken(token);
+            if(isValid){
+                final String login = jwtService.extractLogin(token);
+                final Participant participant = participantService.findParticipantByLogin(login);
+                return ResponseEntity.ok(new TokenVerifyResponse(jwtService.validateToken(authenticationRequest.token()),participant.getId(),"Token valid",isAdmin(login)));
+            }
+            return ResponseEntity.ok(new TokenVerifyResponse(false,null,"Invalid Token",false));
         }catch (ExpiredJwtException e){
-            return ResponseEntity.ok(new TokenVerifyResponse(false,"Token expired"));
+            return ResponseEntity.ok(new TokenVerifyResponse(false,null,"Token expired",false));
         }
+    }
+
+    private boolean isAdmin(final String email){
+        return "admin@admin.com".equals(email);
     }
 }

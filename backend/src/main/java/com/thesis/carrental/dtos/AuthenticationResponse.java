@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public record AuthenticationResponse(
     String id,
     String token,
-    String message
+    String message,
+    boolean admin
 ) {
 }

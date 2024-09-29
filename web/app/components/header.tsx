@@ -11,11 +11,9 @@ export default function Header() {
     const router = useRouter();
     const session = useAuthStore((state) => state.session);
     const doLogout = useAuthStore((state) => state.logout);
-    const { chatService } = useGlobalServiceStore();
 
     const handleLogout = (): void => {
         authenticationService.clearToken();
-        chatService.disconnect();
         doLogout();
         router.push("/")
         router.refresh()
@@ -40,8 +38,8 @@ export default function Header() {
             </nav>
 
             <div className="w-3/12 flex justify-end">
-                USER ID: {session.getUserId()}
-                {session.isLoggedIn() ? <form><GenericButton {...logout} /></form> : <HeaderLink label={'Login'} path={'/login'} />}
+                USER ID: {session.userId}
+                {session.loggedIn ? <form><GenericButton {...logout} /></form> : <HeaderLink label={'Login'} path={'/login'} />}
             </div>
         </nav>)
 }
