@@ -31,6 +31,10 @@ public class Participant extends PersistentEntity {
 
     private String roles;
 
+    private boolean approved;
+
+    private String status;
+
     public String getFirstName() {
         return firstName;
     }
@@ -105,5 +109,21 @@ public class Participant extends PersistentEntity {
 
     public String getDisplayName(){
         return this.firstName + " " + this.lastName;
+    }
+
+    public boolean isApproved() {
+        return approved;
+    }
+
+    public void setApproved(final boolean approved) {
+        this.approved = approved;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(final String status) {
+        this.status = status;
     }
 }

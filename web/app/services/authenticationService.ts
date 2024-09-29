@@ -3,7 +3,9 @@ import { BaseService } from './baseService';
 const TOKEN_KEY = "USER_TOKEN";
 
 interface TokenResponse {
-    isValid: boolean
+    isValid: boolean,
+    admin: boolean,
+    id: string
 }
 
 export interface LoginCredentials {
@@ -15,7 +17,8 @@ export interface LoginCredentials {
 export interface AuthenticationResponse {
     id: string,
     token: string,
-    message: string
+    message: string,
+    admin: boolean
 }
 
 export const defaultLoginCredentials = {
@@ -54,7 +57,7 @@ export class AuthenticationServiceImpl extends BaseService implements Authentica
         const token = localStorage.getItem(TOKEN_KEY);
         console.log("TOKEN IN MSTORAGE", token)
         if (!token) {
-            return Promise.resolve({ isValid: false });
+            return Promise.resolve({ isValid: false, admin: false,id:"" });
         }
         return this.verifyToken();
     }
@@ -62,7 +65,7 @@ export class AuthenticationServiceImpl extends BaseService implements Authentica
     public verifyToken = async (): Promise<TokenResponse> => {
         const token = localStorage.getItem(TOKEN_KEY);
         if (!token) {
-            return { isValid: false }
+            return { isValid: false, admin: false,id:"" }
         }
         const URL = `${this.getBaseURL()}${this.VERIFY_TOKEN}`;
 

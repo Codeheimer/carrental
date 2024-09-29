@@ -6,6 +6,7 @@ interface Session {
   token: string | null
   headerLinks: HeadLink[]
   userId: string | null;
+  admin: boolean
 }
 
 const defaultLinks: HeadLink[] = [
@@ -15,68 +16,30 @@ const defaultLinks: HeadLink[] = [
 
 const loggedInLinks: HeadLink[] = [...defaultLinks, { label: "My Listings", path: "/admin/listings" }]
 
+const adminLinks: HeadLink[] = [...loggedInLinks, { label: "Users", path: "/admin/accounts" }]
+
 export class SessionImpl implements Session {
-  loggedIn: boolean;
-  token: string | null;
-  headerLinks: HeadLink[];
-  userId: string | null;
-
-  constructor() {
-    this.loggedIn = false;
-    this.token = null;
-    this.headerLinks = defaultLinks;
-    this.userId = "";
-  }
-
-  public isLoggedIn = (): boolean => {
-    return this.loggedIn;
-  }
-
-  public setLoggedIn = (loggedIn: boolean): void => {
-    this.loggedIn = loggedIn
-  }
-
-  public getToken = (): string | null => {
-    return this.token;
-  }
-
-  public setToken = (token: string | null): void => {
-    this.token = token;
-  }
-
-  public getHeaderLinks = (): HeadLink[] => {
-    return this.headerLinks;
-  }
-
-  public setHeaderLinks = (headerLinks: HeadLink[]): void => {
-    this.headerLinks = headerLinks;
-  }
-
-  public getUserId = (): string | null => {
-    return this.userId;
-  }
-
-  public setUserId = (userId: string | null): void => {
-    this.userId = userId;
-  }
-
+  constructor(
+    public loggedIn: boolean = false,
+    public token: string | null = null,
+    public headerLinks: HeadLink[] = defaultLinks,
+    public userId: string | null = "",
+    public admin: boolean = false
+  ) { }
 }
 
 interface AuthStore {
   session: SessionImpl;
-  login: (token: string | null, userId: string) => void;
+  login: (token: string | null, userId: string, admin: boolean) => void;
   logout: () => void;
 }
 
 const useAuthStore = create<AuthStore>((set) => ({
   session: new SessionImpl(),
-  login: (token: string | null, userId: string) => {
+  login: (token: string | null, userId: string, admin: boolean) => {
     set(() => {
-      const newSession = new SessionImpl();
-      newSession.setLoggedIn(true);
-      newSession.setHeaderLinks(loggedInLinks);
-      newSession.setToken(token);
-      newSession.setUserId(userId);
+      const newLinks = admin ? adminLinks : loggedInLinks;
+      const newSession = new SessionImpl(true, token, newLinks, userId, admin);
       return { session: newSession }
     })
   },

@@ -27,7 +27,7 @@ export class ChatMessageImpl implements ChatMessage {
 export default function Message(chat: ChatMessage) {
     const { session } = useAuthStore();
     return (<>
-        {Number(chat.senderId) === Number(session.getUserId()) ? <YouMessage {...chat} /> : <OtherMessage {...chat} />}
+        {Number(chat.senderId) === Number(session.userId) ? <YouMessage {...chat} /> : <OtherMessage {...chat} />}
     </>
     )
 }

@@ -24,11 +24,10 @@ export default function LoginPage() {
         setError(defaultErrorDetails);
 
         authenticationService.generateToken({ email, password } as LoginCredentials).then((response) => {
-            console.log(`LOGIN RESPONSE ${JSON.stringify(response)}`)
             const token = response.token;
             if (token) {
                 authenticationService.saveToken(token);
-                login(authenticationService.getToken(), response.id);
+                login(authenticationService.getToken(), response.id,response.admin);
                 router.push("/")
             } else {
                 showError("Error", response.message)

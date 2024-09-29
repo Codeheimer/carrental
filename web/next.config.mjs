@@ -9,7 +9,8 @@ const nextConfig = {
         VEHICLE_FILTER: process.env.VEHICLE_FILTER,
         REGISTER: process.env.REGISTER,
         GENERATE_TOKEN: process.env.GENERATE_TOKEN,
-        CHAT_RETRIEVE_CONVERSATIONS: process.env.CHAT_RETRIEVE_CONVERSATIONS
+        CHAT_RETRIEVE_CONVERSATIONS: process.env.CHAT_RETRIEVE_CONVERSATIONS,
+        FETCH_USERS: process.env.FETCH_USERS
     }
 };
 
