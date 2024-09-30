@@ -18,7 +18,7 @@ export default function ClientAuthenticationInitializer() {
             const response = await authenticationService.verifyToken();
             if (response.isValid) {
                 if (!session.loggedIn) {
-                    login(authenticationService.getToken(), response.id as string,response.admin);
+                    login(authenticationService.getToken(), response.id as string, response.roles, response.admin, response.displayName);
                 }
             } else {
                 if (session.loggedIn) {

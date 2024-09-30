@@ -1,10 +1,17 @@
 package com.thesis.carrental.entities;
 
+import com.thesis.carrental.enums.ParticipantRoles;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "participants")
@@ -125,5 +132,14 @@ public class Participant extends PersistentEntity {
 
     public void setStatus(final String status) {
         this.status = status;
+    }
+
+    public List<ParticipantRoles> getRolesEnum(){
+        if(StringUtils.isEmpty(this.getRoles()))
+            return Collections.emptyList();
+
+        return Arrays.stream(this.getRoles().split(","))
+            .map(ParticipantRoles::valueOf)
+            .collect(Collectors.toList());
     }
 }

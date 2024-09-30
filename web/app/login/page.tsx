@@ -17,7 +17,6 @@ export default function LoginPage() {
     const [error, setError] = useState(defaultErrorDetails);
     const { authenticationService } = useGlobalServiceStore();
     const { login } = useAuthStore();
-    const { setConversations, setCurrentConversation } = useChatStore();
 
     const attemptLogin = (event: React.FormEvent): void => {
         event.preventDefault();
@@ -27,7 +26,7 @@ export default function LoginPage() {
             const token = response.token;
             if (token) {
                 authenticationService.saveToken(token);
-                login(authenticationService.getToken(), response.id,response.admin);
+                login(authenticationService.getToken(), response.id, response.roles, response.admin, response.displayName);
                 router.push("/")
             } else {
                 showError("Error", response.message)

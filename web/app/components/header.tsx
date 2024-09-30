@@ -37,9 +37,13 @@ export default function Header() {
                 </ul>
             </nav>
 
-            <div className="w-3/12 flex justify-end">
-                USER ID: {session.userId}
-                {session.loggedIn ? <form><GenericButton {...logout} /></form> : <HeaderLink label={'Login'} path={'/login'} />}
+            <div className="w-3/12 flex justify-end items-center">
+                {session.loggedIn && <div>
+                    Welcome, {session.displayName}
+                </div>}
+                <div>
+                    {session.loggedIn ? <form><GenericButton {...logout} /></form> : <HeaderLink label={'Login'} path={'/login'} />}
+                </div>
             </div>
         </nav>)
 }
