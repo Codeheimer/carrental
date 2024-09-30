@@ -33,13 +33,10 @@ export interface VehicleService {
 }
 
 export class VehicleFilterImpl implements VehicleFilter {
-    search: string;
-    own: boolean;
-
-    constructor(search: string = "", own: boolean = false) {
-        this.search = search;
-        this.own = own;
-    }
+    constructor(
+        public search: string = "",
+        public own: boolean = false
+    ) { }
 }
 
 export class VehicleServiceImpl extends BaseService implements VehicleService {

@@ -75,7 +75,7 @@ export default function Accounts() {
                             <td>{user.name}</td>
                             <td>
                                 <GenericButton {...createButtonDetails("ID", "button", () => handleShowImage(user.uploadedId))} />
-                                <GenericButton {...createButtonDetails("Permit", "button", () => handleShowImage(user.uploadedBusinessPermit))} />
+                                {user.uploadedBusinessPermit && <GenericButton {...createButtonDetails("Permit", "button", () => handleShowImage(user.uploadedBusinessPermit))} />}
                             </td>
                             <td>
                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold

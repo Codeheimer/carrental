@@ -7,6 +7,7 @@ interface VehicleFilteringStore {
     filter: VehicleFilter;
     setFilter: (newFilter: VehicleFilter) => void;
     doFilter: (token?: string | null) => void;
+    doFilterReturnResult: (token?: string | null) => Promise<VehicleResult[]>;
     results: VehicleResult[];
 }
 
@@ -22,6 +23,17 @@ const useVehicleFilteringStore = create<VehicleFilteringStore>((set, get) => ({
             await vehicleService.filter(filter, token).then((response) => {
                 set({ results: response })
             });
+        } catch (error) {
+            console.error("Error filtering, reason: ", error);
+            return [];
+        }
+    },
+    doFilterReturnResult: async (token: string | null = null): Promise<VehicleResult[]> => {
+        const { vehicleService } = useGlobalServiceStore.getState();
+        const filter = get().filter;
+        try {
+            const response = await vehicleService.filter(filter, token);
+            return response;
         } catch (error) {
             console.error("Error filtering, reason: ", error);
             return [];

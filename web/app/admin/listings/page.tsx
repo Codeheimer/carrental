@@ -11,24 +11,26 @@ import { useEffect, useState } from "react";
 
 export default function ListingsPanel() {
     const headers = ['Added', 'Title', 'Description', 'Status', 'Action']
-    const { doFilter, setFilter, results } = useVehicleFilteringStore.getState();
-    const [currentResults, setCurrentRessults] = useState<VehicleResult[]>(results)
+    const { doFilterReturnResult, setFilter } = useVehicleFilteringStore.getState();
     const statuses = ['AVAILABLE', 'MAINTENANCE', 'RENTED'];
     const { vehicleService, authenticationService } = useGlobalServiceStore();
-    const ownVehicleFilter = new VehicleFilterImpl("", true);
+    const [listings, setListings] = useState<VehicleResult[]>([])
     const router = useRouter();
+
     useEffect(() => {
-        setFilter(ownVehicleFilter)
-        doFilter(authenticationService.getToken());
-        setCurrentRessults(results)
-    }, [])
+        setFilter(new VehicleFilterImpl("", true))
+        const fetchMyListings = async () => {
+            const result = await doFilterReturnResult(authenticationService.getToken());
+            setListings(result);
+        };
+        fetchMyListings();
+    }, [setFilter, doFilterReturnResult, authenticationService, listings, setListings])
 
     const handleStatusChange = (newStatus: string, vehicleId: number): void => {
         vehicleService.updateStatus(newStatus, vehicleId).then(response => {
             console.log(`RESPONSE ${response}`)
             if (response.success) {
-                console.log("Success! Refreshing page...");
-                router.refresh();
+                setListings([])
             } else {
                 alert(response.message);
             }
@@ -110,7 +112,7 @@ export default function ListingsPanel() {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentResults.map((result, key) => createTableRow(result, result.id))}
+                        {listings.map((result, key) => createTableRow(result, result.id))}
                     </tbody>
                 </table>
             </div>

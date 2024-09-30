@@ -56,7 +56,7 @@ public class ParticipantUserDetailsService implements UserDetailsService {
 
         final StringBuilder roles = new StringBuilder(ParticipantRoles.ROLE_RENTEE.toString());
 
-        if (!businessPermit.isEmpty()) {
+        if (registrationRequest.businessOwner()) {
             roles.append(",")
                 .append(ParticipantRoles.ROLE_RENTER);
             if (participant.getEmail().equals("admin@admin.com")) {

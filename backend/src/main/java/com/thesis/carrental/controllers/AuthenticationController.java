@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import static java.util.Collections.emptyList;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
@@ -48,7 +50,7 @@ public class AuthenticationController {
     @PostMapping(value = "/addNewUser", consumes = {"multipart/form-data"})
     public ResponseEntity<RegistrationResponse> addNewUser(@RequestPart("registrationData") RegistrationRequest registrationRequest,
         @RequestPart("identification") final MultipartFile identification,
-        @RequestPart("businessPermit") final MultipartFile businessPermit) {
+        @RequestPart(value = "businessPermit",required = false) final MultipartFile businessPermit) {
         try{
             return ResponseEntity.ok(participantUserDetailsService.addUser(registrationRequest,identification,businessPermit));
         }catch (Exception e){
@@ -77,12 +79,30 @@ public class AuthenticationController {
             if (authentication.isAuthenticated()) {
                 final String login = authenticationRequest.email();
                 final Participant participant = participantService.findParticipantByLogin(login);
-                return ResponseEntity.ok(new AuthenticationResponse(String.valueOf(participant.getId()),jwtService.generateToken(login),null,isAdmin(participant.getEmail())));
+                return ResponseEntity.ok(new AuthenticationResponse(
+                    String.valueOf(participant.getId()),
+                    jwtService.generateToken(login),
+                    null,
+                    isAdmin(participant.getEmail()),
+                    participant.getRolesEnum(),
+                    participant.getDisplayName()));
             } else {
-                return ResponseEntity.badRequest().body(new AuthenticationResponse(String.valueOf(0),"", "Login Credentials Invalid",false));
+                return ResponseEntity.badRequest().body(new AuthenticationResponse(
+                    String.valueOf(0),
+                    "",
+                    "Login Credentials Invalid",
+                    false,
+                    emptyList(),
+                    ""));
             }
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(new AuthenticationResponse(String.valueOf(0),"", "Error in authentication, reason: "+e.getMessage(),false));
+            return ResponseEntity.badRequest().body(new AuthenticationResponse(
+                String.valueOf(0),
+                "",
+                "Error in authentication, reason: "+e.getMessage(),
+                false,
+                emptyList(),
+                ""));
         }
     }
 
@@ -94,11 +114,28 @@ public class AuthenticationController {
             if(isValid){
                 final String login = jwtService.extractLogin(token);
                 final Participant participant = participantService.findParticipantByLogin(login);
-                return ResponseEntity.ok(new TokenVerifyResponse(jwtService.validateToken(authenticationRequest.token()),participant.getId(),"Token valid",isAdmin(login)));
+                return ResponseEntity.ok(new TokenVerifyResponse(
+                    jwtService.validateToken(authenticationRequest.token()),
+                    participant.getId(),"Token valid",
+                    isAdmin(login),
+                    participant.getRolesEnum(),
+                    participant.getDisplayName()));
             }
-            return ResponseEntity.ok(new TokenVerifyResponse(false,null,"Invalid Token",false));
+            return ResponseEntity.ok(new TokenVerifyResponse(
+                false,
+                null,
+                "Invalid Token",
+                false,
+                emptyList(),
+                ""));
         }catch (ExpiredJwtException e){
-            return ResponseEntity.ok(new TokenVerifyResponse(false,null,"Token expired",false));
+            return ResponseEntity.ok(new TokenVerifyResponse(
+                false,
+                null,
+                "Token expired",
+                false,
+                emptyList(),
+                ""));
         }
     }
 
