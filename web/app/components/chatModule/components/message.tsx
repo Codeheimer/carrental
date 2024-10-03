@@ -15,11 +15,11 @@ export interface ChatMessage {
 
 export class ChatMessageImpl implements ChatMessage {
     constructor(
-        public conversationId: string | null,
-        public recipientId: string,
-        public senderId: string,
-        public message: string,
-        public timestamp: string,
+        public conversationId: string | null = null,
+        public recipientId: string = "",
+        public senderId: string = "",
+        public message: string = "",
+        public timestamp: string = "",
         public conversation: ConversationImpl | null = null
     ) { }
 }

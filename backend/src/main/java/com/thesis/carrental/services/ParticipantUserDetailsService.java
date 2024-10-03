@@ -56,14 +56,15 @@ public class ParticipantUserDetailsService implements UserDetailsService {
 
         final StringBuilder roles = new StringBuilder(ParticipantRoles.ROLE_RENTEE.toString());
 
+        if (participant.getEmail().equals("admin@admin.com")) {
+            roles.append(",").append(ParticipantRoles.ADMIN);
+            participant.setApproved(true);
+            participant.setStatus(ParticipantStatus.APPROVED.name());
+        }
+
         if (registrationRequest.businessOwner()) {
             roles.append(",")
                 .append(ParticipantRoles.ROLE_RENTER);
-            if (participant.getEmail().equals("admin@admin.com")) {
-                roles.append(",").append(ParticipantRoles.ADMIN);
-                participant.setApproved(true);
-                participant.setStatus(ParticipantStatus.APPROVED.name());
-            }
         }
 
         participant.setRoles(roles.toString());

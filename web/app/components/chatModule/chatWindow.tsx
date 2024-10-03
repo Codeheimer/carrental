@@ -1,7 +1,7 @@
 'use client';
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import Message, { ChatMessage, ChatMessageImpl } from "./components/message";
-import useChatStore from "@/app/stores/chatStore";
+import useChatStore, { ChatParticipant, ConversationImpl } from "@/app/stores/chatStore";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 import useAuthStore from "@/app/stores/authStore";
 
@@ -22,24 +22,35 @@ export default function ChatWindow() {
 
     const send = (event: React.FormEvent | KeyboardEvent<HTMLInputElement>) => {
         if (currentConversation) {
-            const message = new ChatMessageImpl(currentConversation.id, currentConversation.recipientId.toString(), session.userId as string, draft, new Date().toISOString());
             if (event.type === 'keydown') {
                 const keyboardEvent = event as KeyboardEvent<HTMLInputElement>;
                 if (keyboardEvent.key === 'Enter') {
                     if (draft.length > 0) {
-                        addToMessages(message);
-                        setDraft('');
+                        const message = newMessage(currentConversation);
+                        if (message) {
+                            addToMessages(message);
+                            setDraft('');
+                        }
                     }
                     keyboardEvent.preventDefault();
                 }
             } else {
                 if (draft.length > 0) {
-                    addToMessages(message);
-                    setDraft('');
+                    const message = newMessage(currentConversation);
+                    if (message) {
+                        addToMessages(message);
+                        setDraft('');
+                    }
                 }
                 event.preventDefault();
             }
         }
+    }
+
+    const newMessage = (currentConversation: ConversationImpl): ChatMessageImpl | undefined => {
+        const message = new ChatMessageImpl(currentConversation.conversationId, currentConversation.sendToId, session.userId as string, draft, new Date().toISOString());
+        console.log(`creating message ${JSON.stringify(message)}`)
+        return message;
     }
 
     const exitConvesation = (): void => {
@@ -49,18 +60,18 @@ export default function ChatWindow() {
     const addToMessages = (chat: ChatMessage): void => {
         if (currentConversation && client) {
             chatService.sendMessage(client, chat);
-            const updateMessages = [...currentConversation.messages, chat]
-            const updatedConversation = {
+            const updateMessages: ChatMessage[] = [...currentConversation.messages, chat]
+            const updatedConversation: ConversationImpl = {
                 ...currentConversation,
                 messages: updateMessages,
-                lastMessage: chat.message,
+                senderLastMessage: chat.message,
                 lastMessageDate: new Date().toISOString(),
                 unread: false
 
             }
             setCurrentConversation(updatedConversation)
-            const updatedConversations = conversations.map((conversation) =>
-                conversation.id === updatedConversation.id ? updatedConversation : conversation
+            const updatedConversations: ConversationImpl[] = conversations.map((conversation) =>
+                Number(conversation.conversationId) === Number(updatedConversation.conversationId) ? updatedConversation : conversation
             );
             setConversations(updatedConversations)
         }
@@ -83,8 +94,8 @@ export default function ChatWindow() {
                 </svg>
             </div>
             <div className="flex items-center justify-center p-1 m-1">
-                <div className="mx-1">{currentConversation?.recipientName}</div>
-                <div className={`mx-1 w-4 h-4 ${currentConversation?.isOnline ? 'bg-green-500' : 'bg-gray-400'} rounded-full`}></div>
+                <div className="mx-1">{currentConversation?.conversationTitle}</div>
+                <div className={`mx-1 w-4 h-4 ${currentConversation?.online ? 'bg-green-500' : 'bg-gray-400'} rounded-full`}></div>
             </div>
         </div>
 

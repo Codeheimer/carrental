@@ -10,10 +10,4 @@ import java.util.List;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
-
-    @Query("SELECT m FROM Message m where m.conversationId = :conversationId ORDER BY m.creationDate DESC LIMIT 1 ")
-    Message findLastMessageByConversation(@Param("conversationId") final Long conversationId);
-
-    @Query("SELECT m FROM Message m where m.conversationId = :conversationId ORDER BY m.creationDate ")
-    List<Message> findMessagesByConversationId(@Param("conversationId") final Long conversationId);
 }

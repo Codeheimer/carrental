@@ -35,13 +35,13 @@ const useAuthStore = create<AuthStore>((set) => ({
   session: new SessionImpl(),
   login: (token: string | null, userId: string, permissions: UserRoles[], admin: boolean, displayName: string) => {
     set(() => {
-      console.log("permissions: ", permissions);
+      //console.log("permissions: ", permissions);
       const links = [...defaultLinks];
-      if (UserRoles.ROLE_RENTER in permissions) {
+      if (permissions.includes(UserRoles.ROLE_RENTER)) {
         links.push({ label: "Add your Car", path: "/vehicle/new" });
         links.push({ label: "My Listings", path: "/admin/listings" });
       }
-      if (UserRoles.ADMIN in permissions) {
+      if (permissions.includes(UserRoles.ADMIN)) {
         links.push({ label: "Users", path: "/admin/accounts" });
       }
       const newSession = new SessionImpl(true, token, links, userId, admin, permissions, displayName);

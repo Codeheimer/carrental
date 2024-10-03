@@ -1,4 +1,4 @@
-package com.thesis.carrental.dtos;
+package com.thesis.carrental.dtos.chat;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -10,7 +10,6 @@ public record ChatMessage(
     Instant timestamp,
     String recipientId,
     String senderId,
-    String conversationId,
-    ConversationResponse conversation
+    String conversationId
 ) {
 }

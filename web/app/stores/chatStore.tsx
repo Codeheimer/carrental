@@ -2,12 +2,16 @@ import { create } from "zustand"
 import { ChatMessage } from "../components/chatModule/components/message"
 import { CompatClient } from "@stomp/stompjs"
 
-interface Conversation {
-    id: string,
-    recipientId: string
-    recipientName: string
-    isOnline: boolean
-    lastMessage: string
+export interface ChatParticipant {
+    participantId: string,
+    displayName: string
+}
+export interface Conversation {
+    conversationId: string
+    sendToId: string
+    conversationTitle: string
+    online: boolean
+    senderLastMessage: string
     lastMessageDate: string | null
     messages: ChatMessage[]
     unread: boolean
@@ -15,12 +19,12 @@ interface Conversation {
 
 export class ConversationImpl implements Conversation {
     constructor(
-        public id: string = "",
-        public recipientId: string = "",
-        public recipientName: string = "",
-        public isOnline: boolean = false,
-        public lastMessage: string = "",
-        public lastMessageDate: string | null,
+        public conversationId: string = "",
+        public sendToId: string = "",
+        public conversationTitle: string = "Anonymous",
+        public online: boolean = false,
+        public senderLastMessage: string = "",
+        public lastMessageDate: string | null = null,
         public messages: ChatMessage[] = [],
         public unread: boolean = false) { }
 }
@@ -46,9 +50,42 @@ const useChatStore = create<ChatStore>((set, get) => ({
     currentConversation: null,
     notificationCount: 0,
     toggleChat: () => {
+        const { currentConversation, conversations } = get();
         set((state) => ({ chatOpen: !state.chatOpen }));
+        if (currentConversation) {
+            const updatedConversation = { ...currentConversation, unread: false }
+            const updatedConversations = conversations;
+            const conversationIndex = conversations.findIndex(
+                conv => Number(conv.conversationId) === Number(currentConversation.conversationId)
+            );
+            updatedConversations[conversationIndex] = updatedConversation;
+            set({ conversations: updatedConversations });
+            const notificationCount = updatedConversations.filter(
+                conversation => conversation.unread
+            ).length;
+            set({ notificationCount: notificationCount });
+
+        }
     },
-    setCurrentConversation: (conversation: ConversationImpl | null) => set({ currentConversation: conversation }),
+    setCurrentConversation: (conversation: ConversationImpl | null) => {
+        set({ currentConversation: conversation })
+        const { currentConversation, conversations } = get();
+        if (currentConversation) {
+            const updatedConversation = { ...currentConversation, unread: false }
+            const updatedConversations = conversations;
+            const conversationIndex = conversations.findIndex(
+                conv => Number(conv.conversationId) === Number(currentConversation.conversationId)
+            );
+            updatedConversations[conversationIndex] = updatedConversation;
+            set({ conversations: updatedConversations });
+            const notificationCount = updatedConversations.filter(
+                conversation => conversation.unread
+            ).length;
+            set({ notificationCount: notificationCount });
+
+        }
+        
+    },
     setConversations: (conversations: ConversationImpl[]) => {
         set({ conversations: conversations })
         const notificationCout = conversations.filter((conversation) => conversation.unread).length;
@@ -58,35 +95,33 @@ const useChatStore = create<ChatStore>((set, get) => ({
     },
     onReceiveMessage: (message: ChatMessage) => {
         if (message.conversationId) {
-            const { currentConversation, conversations } = get();
+            const { currentConversation, conversations, chatOpen } = get();
             let updatedConversations = [...conversations];
 
             // Update current conversation if it matches the incoming message's conversationId
-            if (currentConversation && Number(currentConversation.id) === Number(message.conversationId)) {
-                const updatedCurrentConversation = {
+            if (currentConversation && Number(currentConversation.conversationId) === Number(message.conversationId)) {
+                const updatedCurrentConversation: ConversationImpl = {
                     ...currentConversation,
                     messages: [...currentConversation.messages, message],
-                    lastMessage: message.message,
+                    senderLastMessage: message.message,
                     lastMessageDate: message.timestamp,
-                    unread: false // Since receiver is viewing this conversation, mark as read
+                    unread: !chatOpen
                 };
                 set({ currentConversation: updatedCurrentConversation });
             }
 
             // Find conversation in the list and update it
             const conversationIndex = updatedConversations.findIndex(
-                conv => Number(conv.id) === Number(message.conversationId)
+                conv => Number(conv.conversationId) === Number(message.conversationId)
             );
 
             if (conversationIndex !== -1) {
-                const updatedConversation = {
+                const updatedConversation: ConversationImpl = {
                     ...updatedConversations[conversationIndex],
                     messages: [...updatedConversations[conversationIndex].messages, message],
-                    lastMessage: message.message,
+                    senderLastMessage: message.message,
                     lastMessageDate: message.timestamp,
-                    unread: currentConversation && Number(currentConversation.id) === Number(message.conversationId)
-                        ? false // Mark as read if it's the active conversation
-                        : true  // Otherwise mark it as unread
+                    unread: !chatOpen
                 };
                 updatedConversations[conversationIndex] = updatedConversation;
             } else {
@@ -96,7 +131,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
                     newConversation = {
                         ...newConversation,
                         messages: [message],
-                        lastMessage: message.message,
+                        senderLastMessage: message.message,
                         lastMessageDate: message.timestamp,
                         unread: true // New conversation should be marked as unread by default
                     };
@@ -107,13 +142,9 @@ const useChatStore = create<ChatStore>((set, get) => ({
             // Update the conversations state
             set({ conversations: updatedConversations });
 
-            // Calculate unread notifications count
             const notificationCount = updatedConversations.filter(
                 conversation => conversation.unread
             ).length;
-            console.log(`current count: ${notificationCount}`);
-
-            // Update the notification count in the state
             set({ notificationCount: notificationCount });
         }
     }

@@ -15,10 +15,9 @@ public class LoginSessionService {
         this.loginSessionRepository = loginSessionRepository;
     }
 
-    public void saveSession(final long participantId, final String token) {
-        if (!isOnline(participantId)) {
-            loginSessionRepository.save(new LoginSession(participantId, token));
-        }
+    public long saveSession(final long participantId, final String token) {
+        final LoginSession loginSession = loginSessionRepository.save(new LoginSession(participantId, token));
+        return loginSession.getId();
     }
 
     public void deleteSession(final long participantId) {

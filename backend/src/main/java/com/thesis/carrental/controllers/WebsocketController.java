@@ -1,6 +1,6 @@
 package com.thesis.carrental.controllers;
 
-import com.thesis.carrental.dtos.ChatMessage;
+import com.thesis.carrental.dtos.chat.ChatMessage;
 import com.thesis.carrental.services.ChatService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class WebsocketController extends BaseController {
     void sendMessage(
         @Payload final ChatMessage chatMessage) {
         LOG.info("Received message {}", chatMessage.toString());
-        final ChatMessage savedChatMessage = chatService.saveChat(chatMessage);
+        final ChatMessage savedChatMessage = chatService.processChat(chatMessage);
         simpMessagingTemplate.convertAndSendToUser(
             savedChatMessage.recipientId(),
             "/private-messages",

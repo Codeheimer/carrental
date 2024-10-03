@@ -2,67 +2,55 @@ package com.thesis.carrental.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "messages")
 public class Message extends PersistentEntity {
 
-    @Column(name = "conversation_id")
-    private long conversationId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "conversation_id")
+    private Conversation conversation;
 
-    private String message;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id")
+    private Participant sender;
 
-    @Column(name = "sender_id")
-    private long senderId;
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
-    @Column(name = "receiver_id")
-    private long receiverId;
+    private Message(){}
 
-    private Message() {
+    public Message(final Conversation conversation, final Participant sender, final String content){
+        this.conversation = conversation;
+        this.sender = sender;
+        this.content = content;
     }
 
-    public Message(
-        final long senderId,
-        final long receiverId,
-        final long conversationId,
-        final String message
-    ) {
-        this.conversationId = conversationId;
-        this.message = message;
-        this.senderId = senderId;
-        this.receiverId = receiverId;
+    public Conversation getConversation() {
+        return conversation;
     }
 
-    public long getConversationId() {
-        return conversationId;
+    public void setConversation(final Conversation conversation) {
+        this.conversation = conversation;
     }
 
-    public void setConversationId(final long conversationId) {
-        this.conversationId = conversationId;
+    public Participant getSender() {
+        return sender;
     }
 
-    public String getMessage() {
-        return message;
+    public void setSender(final Participant sender) {
+        this.sender = sender;
     }
 
-    public void setMessage(final String message) {
-        this.message = message;
+    public String getContent() {
+        return content;
     }
 
-    public long getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(final long senderId) {
-        this.senderId = senderId;
-    }
-
-    public long getReceiverId() {
-        return receiverId;
-    }
-
-    public void setReceiverId(final long receiverId) {
-        this.receiverId = receiverId;
+    public void setContent(final String content) {
+        this.content = content;
     }
 }

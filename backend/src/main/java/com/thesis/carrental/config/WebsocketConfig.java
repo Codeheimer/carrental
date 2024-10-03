@@ -1,5 +1,6 @@
 package com.thesis.carrental.config;
 
+import com.thesis.carrental.entities.LoginSession;
 import com.thesis.carrental.entities.Participant;
 import com.thesis.carrental.services.JWTService;
 import com.thesis.carrental.services.LoginSessionService;
@@ -43,6 +44,8 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
     private final ParticipantService participantService;
 
     private final LoginSessionService loginSessionService;
+
+    private final Map<String, Long> loginSessionsMap = new ConcurrentHashMap<>();
     @Autowired
     public WebsocketConfig(JWTService jwtService, ParticipantService participantService,
         LoginSessionService loginSessionService
@@ -92,42 +95,46 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectEvent event) {
-        final ConcurrentHashMap<String, String> simpSessionAttributes = getSimpSessionAttributes(event);
-        if (Objects.nonNull(simpSessionAttributes) && !simpSessionAttributes.contains(PARTICIPANT_SESSION_TOKEN_AND_ID_KEY.toString())) {
-            final Map<String, List<String>> nativeHeaders = getNativeHeaders(event);
-
-            if (Objects.nonNull(nativeHeaders)) {
-                final List<String> authorization = nativeHeaders.get("Authorization");
-                final String token = authorization.getFirst().split(" ")[1];
-                if (jwtService.validateToken(token)) {
-                    final Participant participant = participantService.findParticipantByLogin(jwtService.extractLogin(token));
-                    loginSessionService.deleteSession(participant.getId());
-                    simpSessionAttributes.put(PARTICIPANT_SESSION_TOKEN_AND_ID_KEY.toString(), participant.getId() + "|" + token);
-                    loginSessionService.saveSession(participant.getId(), token);
-                }
-            }
+        final Map<String, List<String>> nativeHeaders = getNativeHeaders(event);
+        if(Objects.isNull(nativeHeaders)){
+            return;
         }
+
+        final List<String> authorization = nativeHeaders.get("Authorization");
+        final String token = authorization.getFirst().split(" ")[1];
+        if(!jwtService.validateToken(token)){
+            return;
+        }
+
+        final Participant participant = participantService.findParticipantByLogin(jwtService.extractLogin(token));
+        final String key = participant.getId() + "|" + token;
+        loginSessionService.deleteSession(participant.getId());
+        final long loginSessionId = loginSessionService.saveSession(participant.getId(), token);
+        loginSessionsMap.put(key, loginSessionId);
     }
 
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-        final String session = getSimpSessionAttributes(event).get(PARTICIPANT_SESSION_TOKEN_AND_ID_KEY.toString());
-        final String token = session.split("\\|")[1];
-        if (jwtService.validateToken(token)) {
-            final Participant participant = participantService.findParticipantByLogin(jwtService.extractLogin(token));
-            getSimpSessionAttributes(event).remove(PARTICIPANT_SESSION_TOKEN_AND_ID_KEY.toString(), participant.getId() + "|" + token);
-            loginSessionService.deleteSession(participant.getId());
+        final Map<String, List<String>> nativeHeaders = getNativeHeaders(event);
+        if(Objects.isNull(nativeHeaders)){
+            return;
         }
+
+        final List<String> authorization = nativeHeaders.get("Authorization");
+        final String token = authorization.getFirst().split(" ")[1];
+        if(!jwtService.validateToken(token)){
+            return;
+        }
+
+        final Participant participant = participantService.findParticipantByLogin(jwtService.extractLogin(token));
+        loginSessionsMap.remove(participant.getId() + "|" + token);
+        loginSessionService.deleteSession(participant.getId());
+
     }
 
     @SuppressWarnings("unchecked")
     private Map<String,List<String>> getNativeHeaders(AbstractSubProtocolEvent event){
         return ((Map<String, List<String>>) event.getMessage().getHeaders().get("nativeHeaders"));
-    }
-
-    @SuppressWarnings("unchecked")
-    private ConcurrentHashMap<String, String> getSimpSessionAttributes(final AbstractSubProtocolEvent event){
-        return (ConcurrentHashMap<String, String>) event.getMessage().getHeaders().get("simpSessionAttributes");
     }
 
     @PreDestroy
