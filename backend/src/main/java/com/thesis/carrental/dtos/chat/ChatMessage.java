@@ -10,6 +10,7 @@ public record ChatMessage(
     Instant timestamp,
     String recipientId,
     String senderId,
-    String conversationId
+    String conversationId,
+    ConversationResponse conversation
 ) {
 }

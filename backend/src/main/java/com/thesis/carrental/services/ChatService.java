@@ -17,6 +17,7 @@ import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 public class ChatService {
@@ -38,33 +39,37 @@ public class ChatService {
         final Participant participant = participantRepository.findByLogin(email).orElseThrow();
         return conversationRepository.findParticipantIncludedIn(participant.getId())
             .stream()
-            .map(c -> {
-                final Optional<Participant> otherParticipant = c.getParticipants()
-                    .stream()
-                    .filter(p -> p.getParticipant().getId() != participant.getId())
-                    .findFirst()
-                    .map(ConversationParticipant::getParticipant);
-                otherParticipant.orElseThrow();
-                final Participant sendTo = otherParticipant.get();
-                final String displayName = sendTo.getDisplayName();
-                final List<MessageResponse> messages = c.getMessages()
-                    .stream()
-                    .map(m -> new MessageResponse(
-                        String.valueOf(m.getSender().getId()),
-                        m.getContent()
-                    ))
-                    .toList();
-                final Message lastMessage = c.getMessages().getLast();
-                return new ConversationResponse(
-                    c.getId(),
-                    String.valueOf(sendTo.getId()),
-                    displayName,
-                    lastMessage.getContent(),
-                    false,
-                    messages
-                );
-            })
+            .map(toConversationResponse(participant.getId()))
             .toList();
+    }
+
+    private Function<Conversation,ConversationResponse> toConversationResponse(final long recipientId){
+        return c -> {
+            final Optional<Participant> otherParticipant = c.getParticipants()
+                .stream()
+                .filter(p -> p.getParticipant().getId() != recipientId)
+                .findFirst()
+                .map(ConversationParticipant::getParticipant);
+            otherParticipant.orElseThrow();
+            final Participant sendTo = otherParticipant.get();
+            final String displayName = sendTo.getDisplayName();
+            final List<MessageResponse> messages = c.getMessages()
+                .stream()
+                .map(m -> new MessageResponse(
+                    String.valueOf(m.getSender().getId()),
+                    m.getContent()
+                ))
+                .toList();
+            final Message lastMessage = c.getMessages().getLast();
+            return new ConversationResponse(
+                c.getId(),
+                String.valueOf(sendTo.getId()),
+                displayName,
+                lastMessage.getContent(),
+                false,
+                messages
+            );
+        };
     }
 
     @Transactional
@@ -76,6 +81,7 @@ public class ChatService {
                 chatMessage.conversationId(),
                 "0"
             ));
+        boolean passConversation = false;
 
         final Participant recipient = participantRepository.findById(recipientId).orElseThrow();
         final Participant sender = participantRepository.findById(senderId).orElseThrow();
@@ -88,6 +94,7 @@ public class ChatService {
                 .add(new ConversationParticipant(conversation, recipient));
             conversation.getParticipants().add(new ConversationParticipant(conversation, sender));
             conversation.getMessages().add(new Message(conversation, sender, content));
+            passConversation = true;
         } else {
             conversation.getMessages().add(new Message(conversation, sender, content));
         }
@@ -98,7 +105,8 @@ public class ChatService {
             chatMessage.timestamp(),
             chatMessage.recipientId(),
             chatMessage.senderId(),
-            String.valueOf(conversation.getId())
+            String.valueOf(conversation.getId()),
+            passConversation ? toConversationResponse(recipientId).apply(conversation) : null
         );
     }
 }

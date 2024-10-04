@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { ChatMessage } from "../components/chatModule/components/message"
 import { CompatClient } from "@stomp/stompjs"
+import useAuthStore from "./authStore"
 
 export interface ChatParticipant {
     participantId: string,
@@ -84,7 +85,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
             set({ notificationCount: notificationCount });
 
         }
-        
+
     },
     setConversations: (conversations: ConversationImpl[]) => {
         set({ conversations: conversations })
@@ -94,6 +95,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
         set({ notificationCount: notificationCout })
     },
     onReceiveMessage: (message: ChatMessage) => {
+        const { session } = useAuthStore.getState();
         if (message.conversationId) {
             const { currentConversation, conversations, chatOpen } = get();
             let updatedConversations = [...conversations];
@@ -110,6 +112,16 @@ const useChatStore = create<ChatStore>((set, get) => ({
                 set({ currentConversation: updatedCurrentConversation });
             }
 
+            const getConversationNoIdThatContainsParticipants = (recipientId: string, senderId: string): number => {
+                return conversations.findIndex(c => {
+                    //c.sendToId , session.userId , senderId , recipientId  53 54 53 54
+                    //console.log("c.sendToId , session.userId , senderId , recipientId ", c.sendToId, session.userId, senderId, recipientId)
+                    //console.log(Number(c.sendToId) === Number(senderId), Number(session.userId) === Number(recipientId), Number(c.conversationId) === 0)
+                    return Number(c.sendToId) === Number(senderId) &&
+                        Number(session.userId) === Number(recipientId) && Number(c.conversationId) === 0
+                });
+            }
+
             // Find conversation in the list and update it
             const conversationIndex = updatedConversations.findIndex(
                 conv => Number(conv.conversationId) === Number(message.conversationId)
@@ -121,21 +133,40 @@ const useChatStore = create<ChatStore>((set, get) => ({
                     messages: [...updatedConversations[conversationIndex].messages, message],
                     senderLastMessage: message.message,
                     lastMessageDate: message.timestamp,
-                    unread: !chatOpen
+                    unread: !chatOpen || currentConversation === null
                 };
                 updatedConversations[conversationIndex] = updatedConversation;
             } else {
-                // If conversation is not in the list, create a new one
-                let newConversation = message.conversation;
-                if (newConversation) {
-                    newConversation = {
-                        ...newConversation,
-                        messages: [message],
+                const newlyCreatedConvoNoId: number = getConversationNoIdThatContainsParticipants(message.recipientId, message.senderId);
+                if (newlyCreatedConvoNoId > -1) {
+                    //console.log("THIS IS A NEW CONVO BUT YOU INITIATED IT")
+                    let existingConversation = conversations[newlyCreatedConvoNoId];
+                    existingConversation = {
+                        ...existingConversation,
+                        conversationId: message.conversationId,
+                        messages: [...existingConversation.messages, message],
                         senderLastMessage: message.message,
                         lastMessageDate: message.timestamp,
-                        unread: true // New conversation should be marked as unread by default
+                        unread: false
                     };
-                    updatedConversations = [newConversation, ...updatedConversations];
+                    updatedConversations[newlyCreatedConvoNoId] = existingConversation;
+                    if (currentConversation !== null) {
+                        set({ currentConversation: existingConversation });
+                    }
+                } else {
+                    // If conversation is not in the list, create a new one
+                    let newConversation = message.conversation;
+                    //console.log("THIS IS NEW CONVO", newConversation);
+                    if (newConversation) {
+                        newConversation = {
+                            ...newConversation,
+                            messages: [message],
+                            senderLastMessage: message.message,
+                            lastMessageDate: message.timestamp,
+                            unread: true // New conversation should be marked as unread by default
+                        };
+                        updatedConversations = [newConversation, ...updatedConversations];
+                    }
                 }
             }
 
