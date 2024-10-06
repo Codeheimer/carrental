@@ -1,13 +1,19 @@
 import { create } from "zustand"
-import { ChatMessage } from "../components/chatModule/components/message"
+import { ChatMessage, ChatMessageImpl } from "../components/chatModule/components/message"
 import { CompatClient } from "@stomp/stompjs"
+import useAuthStore from "./authStore"
+import useSound from "use-sound"
 
-interface Conversation {
-    id: string,
-    recipientId: string
-    recipientName: string
-    isOnline: boolean
-    lastMessage: string
+export interface ChatParticipant {
+    participantId: string,
+    displayName: string
+}
+export interface Conversation {
+    conversationId: string
+    sendToId: string
+    conversationTitle: string
+    online: boolean
+    senderLastMessage: string
     lastMessageDate: string | null
     messages: ChatMessage[]
     unread: boolean
@@ -15,14 +21,23 @@ interface Conversation {
 
 export class ConversationImpl implements Conversation {
     constructor(
-        public id: string = "",
-        public recipientId: string = "",
-        public recipientName: string = "",
-        public isOnline: boolean = false,
-        public lastMessage: string = "",
-        public lastMessageDate: string | null,
+        public conversationId: string = "",
+        public sendToId: string = "",
+        public conversationTitle: string = "Anonymous",
+        public online: boolean = false,
+        public senderLastMessage: string = "",
+        public lastMessageDate: string | null = null,
         public messages: ChatMessage[] = [],
-        public unread: boolean = false) { }
+        public unread: boolean = false) {
+    }
+
+    public equalsBySender = (obj: any): boolean => {
+        if (!(obj instanceof ConversationImpl)) {
+            return false;
+        }
+        const that = obj as ConversationImpl;
+        return Number(this.sendToId) === Number(that.sendToId);
+    }
 }
 
 interface ChatStore {
@@ -38,85 +53,189 @@ interface ChatStore {
     onReceiveMessage: (message: ChatMessage) => void;
 }
 
-const useChatStore = create<ChatStore>((set, get) => ({
-    client: null,
-    setClient: (client: CompatClient | null) => set({ client: client }),
-    chatOpen: false,
-    conversations: [] as ConversationImpl[],
-    currentConversation: null,
-    notificationCount: 0,
-    toggleChat: () => {
-        set((state) => ({ chatOpen: !state.chatOpen }));
-    },
-    setCurrentConversation: (conversation: ConversationImpl | null) => set({ currentConversation: conversation }),
-    setConversations: (conversations: ConversationImpl[]) => {
-        set({ conversations: conversations })
-        const notificationCout = conversations.filter((conversation) => conversation.unread).length;
-        console.log(`current count ${notificationCout}`)
-        //lastly upate the chat bubble notification count
-        set({ notificationCount: notificationCout })
-    },
-    onReceiveMessage: (message: ChatMessage) => {
+const useChatStore = create<ChatStore>((set, get) => {
+    const getConversationNoIdThatContainsParticipants = (conversations: ConversationImpl[], userId: string, recipientId: string, senderId: string): number => {
+        return conversations.findIndex(c => {
+            //c.sendToId , session.userId , senderId , recipientId  53 54 53 54
+            //console.log("c.sendToId , session.userId , senderId , recipientId ", c.sendToId, userId, senderId, recipientId)
+            //console.log(Number(c.sendToId) === Number(senderId), Number(userId) === Number(recipientId), Number(c.conversationId) === 0)
+            return Number(c.sendToId) === Number(senderId) &&
+                Number(userId) === Number(recipientId) && Number(c.conversationId) === 0
+        });
+    }
+
+    const processMessage = (message: ChatMessage) => {
+        const { session } = useAuthStore.getState();
         if (message.conversationId) {
-            const { currentConversation, conversations } = get();
+            const { currentConversation, conversations, chatOpen } = get();
             let updatedConversations = [...conversations];
 
             // Update current conversation if it matches the incoming message's conversationId
-            if (currentConversation && Number(currentConversation.id) === Number(message.conversationId)) {
-                const updatedCurrentConversation = {
+            if (currentConversation && Number(currentConversation.conversationId) === Number(message.conversationId)) {
+                const updatedCurrentConversation: ConversationImpl = {
                     ...currentConversation,
                     messages: [...currentConversation.messages, message],
-                    lastMessage: message.message,
+                    senderLastMessage: message.message,
                     lastMessageDate: message.timestamp,
-                    unread: false // Since receiver is viewing this conversation, mark as read
+                    unread: !chatOpen
                 };
                 set({ currentConversation: updatedCurrentConversation });
             }
 
             // Find conversation in the list and update it
             const conversationIndex = updatedConversations.findIndex(
-                conv => Number(conv.id) === Number(message.conversationId)
+                conv => Number(conv.conversationId) === Number(message.conversationId)
             );
 
             if (conversationIndex !== -1) {
-                const updatedConversation = {
+                const updatedConversation: ConversationImpl = {
                     ...updatedConversations[conversationIndex],
                     messages: [...updatedConversations[conversationIndex].messages, message],
-                    lastMessage: message.message,
+                    senderLastMessage: message.message,
                     lastMessageDate: message.timestamp,
-                    unread: currentConversation && Number(currentConversation.id) === Number(message.conversationId)
-                        ? false // Mark as read if it's the active conversation
-                        : true  // Otherwise mark it as unread
+                    unread: !chatOpen || currentConversation === null
                 };
                 updatedConversations[conversationIndex] = updatedConversation;
             } else {
-                // If conversation is not in the list, create a new one
-                let newConversation = message.conversation;
-                if (newConversation) {
-                    newConversation = {
-                        ...newConversation,
-                        messages: [message],
-                        lastMessage: message.message,
+                const newlyCreatedConvoNoId: number = getConversationNoIdThatContainsParticipants(conversations, session.userId as string, message.recipientId, message.senderId);
+                if (newlyCreatedConvoNoId > -1) {
+                    console.log("THIS IS A NEW CONVO BUT YOU INITIATED IT")
+                    let existingConversation = conversations[newlyCreatedConvoNoId];
+                    existingConversation = {
+                        ...existingConversation,
+                        conversationId: message.conversationId,
+                        messages: [...existingConversation.messages, message],
+                        senderLastMessage: message.message,
                         lastMessageDate: message.timestamp,
-                        unread: true // New conversation should be marked as unread by default
+                        unread: false
                     };
-                    updatedConversations = [newConversation, ...updatedConversations];
+                    updatedConversations[newlyCreatedConvoNoId] = existingConversation;
+                    if (currentConversation !== null) {
+                        set({ currentConversation: existingConversation });
+                    }
+                } else {
+                    // If conversation is not in the list, create a new one
+                    let newConversation = message.conversation;
+                    console.log("THIS IS NEW CONVO", newConversation);
+                    if (newConversation) {
+                        newConversation = {
+                            ...newConversation,
+                            messages: [message],
+                            senderLastMessage: message.message,
+                            lastMessageDate: message.timestamp,
+                            unread: true // New conversation should be marked as unread by default
+                        };
+                        updatedConversations = [newConversation, ...updatedConversations];
+                    }
                 }
             }
-
+            console.log("ALL CONVOS NOW ", JSON.stringify(updatedConversations))
             // Update the conversations state
             set({ conversations: updatedConversations });
 
-            // Calculate unread notifications count
             const notificationCount = updatedConversations.filter(
                 conversation => conversation.unread
             ).length;
-            console.log(`current count: ${notificationCount}`);
-
-            // Update the notification count in the state
             set({ notificationCount: notificationCount });
         }
+
     }
-}));
+
+    const processWSResponse = (message: ChatMessage) => {
+        console.log("RECEIVED WS_RESPONSE ", JSON.stringify(message));
+        const { session } = useAuthStore.getState();
+        const { conversations, currentConversation } = get();
+        const convoIndex: number = getConversationNoIdThatContainsParticipants(conversations, session.userId as string, message.recipientId, message.senderId);
+        const initiatedConvo = conversations[convoIndex];
+        if (currentConversation && initiatedConvo.equalsBySender(currentConversation)) {
+            console.log("WS_RESPONSE: Updating current convo");
+            const updatedCurrentConversation: ConversationImpl = {
+                ...currentConversation,
+                conversationId: message.conversationId as string
+            };
+            set({ currentConversation: updatedCurrentConversation });
+        }
+        console.log("WS_RESPONSE: Updating convo list");
+        const updatedConversations: ConversationImpl[] = conversations.map((c, idx) => {
+            if (convoIndex === idx) {
+                return {
+                    ...currentConversation,
+                    conversationId: message.conversationId as string
+                } as ConversationImpl;
+            }
+            return c; // Return the original conversation if not updating
+        });
+
+
+        set({ conversations: updatedConversations })
+
+
+    }
+    return {
+        client: null,
+        setClient: (client: CompatClient | null) => set({ client: client }),
+        chatOpen: false,
+        conversations: [] as ConversationImpl[],
+        currentConversation: null,
+        notificationCount: 0,
+        toggleChat: () => {
+            const { currentConversation, conversations } = get();
+            set((state) => ({ chatOpen: !state.chatOpen }));
+            if (currentConversation) {
+                const updatedConversation = { ...currentConversation, unread: false }
+                const updatedConversations = conversations;
+                const conversationIndex = conversations.findIndex(
+                    conv => Number(conv.conversationId) === Number(currentConversation.conversationId)
+                );
+                updatedConversations[conversationIndex] = updatedConversation;
+                set({ conversations: updatedConversations });
+                const notificationCount = updatedConversations.filter(
+                    conversation => conversation.unread
+                ).length;
+                set({ notificationCount: notificationCount });
+
+            }
+        },
+        setCurrentConversation: (conversation: ConversationImpl | null) => {
+            set({ currentConversation: conversation })
+            const { currentConversation, conversations } = get();
+            if (currentConversation) {
+                const updatedConversation = { ...currentConversation, unread: false }
+                const updatedConversations = conversations;
+                const conversationIndex = conversations.findIndex(
+                    conv => Number(conv.conversationId) === Number(currentConversation.conversationId)
+                );
+                updatedConversations[conversationIndex] = updatedConversation;
+                set({ conversations: updatedConversations });
+                const notificationCount = updatedConversations.filter(
+                    conversation => conversation.unread
+                ).length;
+                set({ notificationCount: notificationCount });
+
+            }
+
+        },
+        setConversations: (conversations: ConversationImpl[]) => {
+            set({ conversations: conversations })
+            const notificationCout = conversations.filter((conversation) => conversation.unread).length;
+            console.log(`current count ${notificationCout}`)
+            //lastly upate the chat bubble notification count
+            set({ notificationCount: notificationCout })
+        },
+        onReceiveMessage: (message: ChatMessage) => {
+            console.log("MESSAGE TYPE ",message.type);
+            switch (message.type) {
+                case "CHAT":
+                    processMessage(message);
+                    break;
+                case "WS_RESPONSE":
+                    processWSResponse(message);
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+});
 
 export default useChatStore;

@@ -1,151 +1,116 @@
 package com.thesis.carrental.services;
 
-import com.thesis.carrental.dtos.ChatMessage;
-import com.thesis.carrental.dtos.ConversationResponse;
-import com.thesis.carrental.dtos.MessageResponse;
+import com.thesis.carrental.dtos.chat.ChatMessage;
+import com.thesis.carrental.dtos.chat.ConversationResponse;
+import com.thesis.carrental.dtos.chat.MessageResponse;
 import com.thesis.carrental.entities.Conversation;
+import com.thesis.carrental.entities.ConversationParticipant;
 import com.thesis.carrental.entities.Message;
 import com.thesis.carrental.entities.Participant;
+import com.thesis.carrental.enums.MessageType;
 import com.thesis.carrental.repositories.ConversationRepository;
-import com.thesis.carrental.repositories.MessageRepository;
 import com.thesis.carrental.repositories.ParticipantRepository;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.function.Function;
+
+import static com.thesis.carrental.enums.MessageType.CHAT;
 
 @Service
 public class ChatService {
 
     private final ConversationRepository conversationRepository;
-    private final MessageRepository messageRepository;
 
     private final ParticipantRepository participantRepository;
 
     @Autowired
     public ChatService(
         ConversationRepository conversationRepository,
-        MessageRepository messageRepository, ParticipantRepository participantRepository
+        ParticipantRepository participantRepository
     ) {
         this.conversationRepository = conversationRepository;
-        this.messageRepository = messageRepository;
         this.participantRepository = participantRepository;
     }
 
     public List<ConversationResponse> fetchConversations(final String email) {
-        if (StringUtils.isNotEmpty(email)) {
-            final Participant participant = participantRepository.findByLogin(email).orElse(new Participant());
-
-            if(participant.getId() > 0){
-                return conversationRepository.findConversationsOwnerIsIn(participant.getId())
-                    .stream()
-                    .map(conversation -> {
-                        if(conversation.getOther() == participant.getId()){
-                            return toOtherResponse(conversation);
-                        }
-                        return toResponse(conversation);
-                    })
-                    .toList();
-            }
-        }
-        return Collections.emptyList();
+        final Participant participant = participantRepository.findByLogin(email).orElseThrow();
+        return conversationRepository.findParticipantIncludedIn(participant.getId())
+            .stream()
+            .map(toConversationResponse(participant.getId()))
+            .toList();
     }
 
-    private void updateUnreadStatus(final long recipientId, final Conversation conversation){
-        if(recipientId == conversation.getOther()){
-            conversation.setOwnerUnread(false);
-            conversation.setOtherUnread(true);
-        }else if(recipientId == conversation.getOwner()){
-            conversation.setOtherUnread(false);
-            conversation.setOwnerUnread(true);
-        }
+    private Function<Conversation,ConversationResponse> toConversationResponse(final long recipientId){
+        return c -> {
+            final Optional<Participant> otherParticipant = c.getParticipants()
+                .stream()
+                .filter(p -> p.getParticipant().getId() != recipientId)
+                .findFirst()
+                .map(ConversationParticipant::getParticipant);
+            otherParticipant.orElseThrow();
+            final Participant sendTo = otherParticipant.get();
+            final String displayName = sendTo.getDisplayName();
+            final List<MessageResponse> messages = c.getMessages()
+                .stream()
+                .map(m -> new MessageResponse(
+                    String.valueOf(m.getSender().getId()),
+                    m.getContent()
+                ))
+                .toList();
+            final Message lastMessage = c.getMessages().getLast();
+            return new ConversationResponse(
+                c.getId(),
+                String.valueOf(sendTo.getId()),
+                displayName,
+                lastMessage.getContent(),
+                false,
+                messages
+            );
+        };
     }
 
-    public ChatMessage saveChat(final ChatMessage chatMessage) {
+    @Transactional
+    public ChatMessage processChat(final ChatMessage chatMessage) {
         final long recipientId = Long.parseLong(chatMessage.recipientId());
         final long senderId = Long.parseLong(chatMessage.senderId());
-        final Conversation conversation = conversationRepository
-            .findByOwnerAndOther(senderId, recipientId)
-            .orElse(new Conversation(senderId, recipientId));
-        boolean isNewConversation = conversation.getId() == 0;
-        if(isNewConversation){
-            conversation.setOtherUnread(true);
-        }else{
-            updateUnreadStatus(recipientId,conversation);
+        final long conversationId =
+            Long.parseLong(StringUtils.defaultIfEmpty(
+                chatMessage.conversationId(),
+                "0"
+            ));
+        boolean passConversation = false;
+
+        final Participant recipient = participantRepository.findById(recipientId).orElseThrow();
+        final Participant sender = participantRepository.findById(senderId).orElseThrow();
+
+        final Conversation conversation = conversationRepository.findById(conversationId)
+            .orElse(new Conversation());
+        final String content = chatMessage.message();
+        if (conversationId == 0) {
+            conversation.getParticipants()
+                .add(new ConversationParticipant(conversation, recipient));
+            conversation.getParticipants().add(new ConversationParticipant(conversation, sender));
+            conversation.getMessages().add(new Message(conversation, sender, content));
+            passConversation = true;
+        } else {
+            conversation.getMessages().add(new Message(conversation, sender, content));
         }
         conversationRepository.save(conversation);
 
-        messageRepository.save(new Message(
-            senderId,
-            recipientId,
-            conversation.getId(),
-            chatMessage.message()
-        ));
-
-        if(isNewConversation){
-            return new ChatMessage(
-                chatMessage.message(),
-                chatMessage.timestamp(),
-                chatMessage.recipientId(),
-                chatMessage.senderId(),
-                String.valueOf(conversation.getId()),
-                toOtherResponse(conversation));
-        }
         return new ChatMessage(
-            chatMessage.message(),
+            content,
             chatMessage.timestamp(),
             chatMessage.recipientId(),
             chatMessage.senderId(),
             String.valueOf(conversation.getId()),
-            null);
-    }
-
-    private ConversationResponse toResponse(final Conversation conversation) {
-        final Participant participant = participantRepository.findById(conversation.getOther())
-            .orElse(new Participant());
-
-        final Message lastMessage = fetchLastMessage(conversation);
-        return new ConversationResponse(
-            conversation.getId(),
-            conversation.getOther(),
-            participant.getDisplayName(),
-            lastMessage.getMessage(),
-            lastMessage.getCreationDate(),
-            conversation.isOwnerUnread(),
-            fetchMessages(conversation).stream().map(message -> toMessageResponse(message,conversation)).collect(Collectors.toList()));
-    }
-
-    private ConversationResponse toOtherResponse(final Conversation conversation){
-        final Participant participant = participantRepository.findById(conversation.getOwner())
-            .orElse(new Participant());
-        final Message lastMessage = fetchLastMessage(conversation);
-
-        return new ConversationResponse(
-            conversation.getId(),
-            conversation.getOwner(),
-            participant.getDisplayName(),
-            lastMessage.getMessage(),
-            lastMessage.getCreationDate(),
-            conversation.isOtherUnread(),
-            fetchMessages(conversation).stream().map(message -> toMessageResponse(message,conversation)).collect(
-                Collectors.toList()));
-    }
-
-    public Message fetchLastMessage(final Conversation conversation) {
-        return messageRepository.findLastMessageByConversation(conversation.getId());
-    }
-
-    public List<Message> fetchMessages(final Conversation conversation) {
-        return messageRepository.findMessagesByConversationId(conversation.getId());
-    }
-
-    private MessageResponse toMessageResponse(final Message message,final Conversation conversation) {
-        return new MessageResponse(conversation.getId(),message.getReceiverId(),message.getSenderId(),message.getMessage(),
-            new SimpleDateFormat("yyyy-MM-dd").format(Date.from(message.getCreationDate())));
+            passConversation ? toConversationResponse(recipientId).apply(conversation) : null,
+            CHAT
+        );
     }
 }

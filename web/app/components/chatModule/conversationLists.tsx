@@ -7,6 +7,7 @@ export default function ConversationList() {
     const { conversations, setCurrentConversation } = useChatStore();
 
     const loadConversation = (convo: ConversationImpl): void => {
+        console.log(`SETTING CURRENT CONVO `,JSON.stringify(convo))
         setCurrentConversation(convo);
     }
 
@@ -22,16 +23,16 @@ export default function ConversationList() {
         {conversations.length === 0 ? <div className="flex h-full w-full justify-center items-center">No conversations.</div>
             : (<ul className="divide-y divide-gray-200 overflow-y-auto h-[568px]">
                 {conversations.map((convo) =>
-                    <li key={convo.id} className="px-4 py-4 sm:px-6 " onClick={() => loadConversation(convo)}>
+                    <li key={convo.conversationId} className="px-4 py-4 sm:px-6 " onClick={() => loadConversation(convo)}>
                         <div className="flex items-center space-x-4">
                             <div className="flex-shrink-0">
                                 <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700">
-                                    {convo.recipientName.charAt(0)}
+                                    {convo.conversationTitle.charAt(0)}
                                 </div>
                             </div>
                             <div className={`flex-1 min-w-0 ${convo.unread && 'font-black'}`}>
-                                <p className="flex flex-row text-sm text-gray-900 truncate">{convo.recipientName}</p>
-                                <p className="text-sm text-gray-500">{truncate(convo.lastMessage, 50)}</p>
+                                <p className="flex flex-row text-sm text-gray-900 truncate">{convo.conversationTitle}</p>
+                                <p className="text-sm text-gray-500">{truncate(convo.senderLastMessage, 50)}</p>
                             </div>
                         </div>
                     </li>)}

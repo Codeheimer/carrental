@@ -1,55 +1,41 @@
 package com.thesis.carrental.entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "conversations")
 public class Conversation extends PersistentEntity {
-    private long owner;
 
-    private long other;
 
-    private boolean ownerUnread;
-    private boolean otherUnread;
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ConversationParticipant> participants = new HashSet<>();
 
-    public Conversation(){
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL)
+    @OrderBy("creationDate ASC")
+    private List<Message> messages = new ArrayList<>();
+
+    public Set<ConversationParticipant> getParticipants() {
+        return participants;
     }
 
-    public Conversation(final long owner, final long other){
-        this.owner = owner;
-        this.other = other;
+    public void setParticipants(final Set<ConversationParticipant> participants) {
+        this.participants = participants;
     }
 
-    public long getOwner() {
-        return owner;
+    public List<Message> getMessages() {
+        return messages;
     }
 
-    public void setOwner(final long owner) {
-        this.owner = owner;
-    }
-
-    public long getOther() {
-        return other;
-    }
-
-    public void setOther(final long other) {
-        this.other = other;
-    }
-
-    public boolean isOwnerUnread() {
-        return ownerUnread;
-    }
-
-    public void setOwnerUnread(final boolean ownerUnread) {
-        this.ownerUnread = ownerUnread;
-    }
-
-    public boolean isOtherUnread() {
-        return otherUnread;
-    }
-
-    public void setOtherUnread(final boolean otherUnread) {
-        this.otherUnread = otherUnread;
+    public void setMessages(final List<Message> messages) {
+        this.messages = messages;
     }
 }

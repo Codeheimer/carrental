@@ -11,16 +11,20 @@ export interface ChatMessage {
     message: string
     timestamp: string
     conversation?: ConversationImpl | null
+    type: MessageType
 }
+
+type MessageType = "CHAT" | "WS_RESPONSE";
 
 export class ChatMessageImpl implements ChatMessage {
     constructor(
-        public conversationId: string | null,
-        public recipientId: string,
-        public senderId: string,
-        public message: string,
-        public timestamp: string,
-        public conversation: ConversationImpl | null = null
+        public conversationId: string | null = null,
+        public recipientId: string = "",
+        public senderId: string = "",
+        public message: string = "",
+        public timestamp: string = "",
+        public conversation: ConversationImpl | null = null,
+        public type: MessageType = "CHAT"
     ) { }
 }
 

@@ -1,6 +1,6 @@
 package com.thesis.carrental.controllers;
 
-import com.thesis.carrental.dtos.ConversationResponse;
+import com.thesis.carrental.dtos.chat.ConversationResponse;
 import com.thesis.carrental.services.ChatService;
 import com.thesis.carrental.services.JWTService;
 import jakarta.servlet.http.HttpServletRequest;

@@ -19,12 +19,17 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
         fetchVehicle();
     }, [params.vehicleId, vehicleService])
 
-    const handleInitiateChatWithRenter = (ownerId: string, owner: string) => {
+    const handleInitiateChatWithRenter = (listingOwnerId: string, owner: string) => {
         if (!chatOpen) {
-            const newConversation = new ConversationImpl(0, ownerId, owner, false, "", null, []);
-            setCurrentConversation(newConversation);
-            const updatedConversations = [...conversations, newConversation];
-            setConversations(updatedConversations);
+            const existingConversation = conversations.find(c => Number(c.sendToId) === Number(listingOwnerId));
+            if(!existingConversation){
+                const newConversation = new ConversationImpl("0", listingOwnerId, owner);
+                setCurrentConversation(newConversation);
+                const updatedConversations = [...conversations, newConversation];
+                setConversations(updatedConversations);
+            }else{
+                setCurrentConversation(existingConversation);
+            }
             toggleChat();
         }
     }

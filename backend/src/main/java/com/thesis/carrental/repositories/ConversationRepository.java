@@ -12,11 +12,7 @@ import java.util.Optional;
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
 
-    @Query("SELECT c FROM Conversation c WHERE (c.owner = :ownerId) OR (c.other = :ownerId) ")
-    List<Conversation> findConversationsOwnerIsIn(@Param("ownerId")final long ownerId);
-
-    @Query("SELECT c FROM Conversation c WHERE " +
-        "(c.owner = :ownerId and c.other = :otherId) OR " +
-        "(c.other = :ownerId and c.owner = :otherId) ")
-    Optional<Conversation> findByOwnerAndOther(@Param("ownerId")final long ownerId, final long otherId);
+    @Query("SELECT c FROM Conversation c " +
+        "JOIN c.participants p WHERE  p.participant.id = :participantId ")
+    List<Conversation> findParticipantIncludedIn(@Param("participantId") final Long participantId);
 }
