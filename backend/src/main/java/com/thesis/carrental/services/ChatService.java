@@ -7,6 +7,7 @@ import com.thesis.carrental.entities.Conversation;
 import com.thesis.carrental.entities.ConversationParticipant;
 import com.thesis.carrental.entities.Message;
 import com.thesis.carrental.entities.Participant;
+import com.thesis.carrental.enums.MessageType;
 import com.thesis.carrental.repositories.ConversationRepository;
 import com.thesis.carrental.repositories.ParticipantRepository;
 import jakarta.transaction.Transactional;
@@ -18,6 +19,8 @@ import org.springframework.web.util.HtmlUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+
+import static com.thesis.carrental.enums.MessageType.CHAT;
 
 @Service
 public class ChatService {
@@ -88,7 +91,7 @@ public class ChatService {
 
         final Conversation conversation = conversationRepository.findById(conversationId)
             .orElse(new Conversation());
-        final String content = HtmlUtils.htmlEscape(chatMessage.message());
+        final String content = chatMessage.message();
         if (conversationId == 0) {
             conversation.getParticipants()
                 .add(new ConversationParticipant(conversation, recipient));
@@ -106,7 +109,8 @@ public class ChatService {
             chatMessage.recipientId(),
             chatMessage.senderId(),
             String.valueOf(conversation.getId()),
-            passConversation ? toConversationResponse(recipientId).apply(conversation) : null
+            passConversation ? toConversationResponse(recipientId).apply(conversation) : null,
+            CHAT
         );
     }
 }

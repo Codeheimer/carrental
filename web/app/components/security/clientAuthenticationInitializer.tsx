@@ -9,7 +9,7 @@ import useSound from "use-sound";
 
 export default function ClientAuthenticationInitializer() {
     const { session, login, logout } = useAuthStore()
-    const { setConversations, onReceiveMessage, setClient, client } = useChatStore()
+    const { setConversations, onReceiveMessage, setClient, client, setCurrentConversation } = useChatStore()
     const { chatService, authenticationService } = useGlobalServiceStore()
     const [play] = useSound("/sfx/chat-receive.mp3", { volume: 0.5, playbackRate: 1.5 });
 
@@ -45,7 +45,9 @@ export default function ClientAuthenticationInitializer() {
             try {
                 console.log("connecting to stomp")
                 const handleReceiveMessage = (chatMessage: ChatMessage) => {
-                    play();
+                    if (chatMessage.type === "CHAT") {
+                        play();
+                    }
                     onReceiveMessage(chatMessage);
                 }
                 const stompClient = await chatService.connect(session.token, session.userId as string, handleReceiveMessage);
@@ -78,6 +80,7 @@ export default function ClientAuthenticationInitializer() {
 
     const handleBeforeUnload = useCallback(() => {
         if (client) {
+            logout();
             chatService.disconnect(client);
             setClient(null);
         }

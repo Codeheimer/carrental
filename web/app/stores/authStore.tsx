@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { HeadLink } from "../components/header/headerLink";
 import { UserRoles } from "../components/enums/userRoles";
+import useChatStore from "./chatStore";
 
 interface Session {
   loggedIn: boolean
@@ -50,6 +51,9 @@ const useAuthStore = create<AuthStore>((set) => ({
     })
   },
   logout: () => {
+    const { setConversations, setCurrentConversation } = useChatStore.getState();
+    setCurrentConversation(null);
+    setConversations([]);
     set(() => {
       return { session: new SessionImpl() }
     })
