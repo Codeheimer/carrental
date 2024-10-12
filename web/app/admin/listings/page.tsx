@@ -3,10 +3,9 @@
 import GenericButton, { createButtonDetails } from "@/app/components/fields/genericButton";
 import { VehicleResult } from "@/app/components/resultsTable/resultsTable";
 import AuthenticatedPage from "@/app/components/security/authenticatedPage";
-import { VehicleFilterImpl } from "@/app/services/vehicleService";
+import { VehicleFilter } from "@/app/services/vehicleService";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 import useVehicleFilteringStore from "@/app/stores/vehicleFilteringStore";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function ListingsPanel() {
@@ -15,16 +14,17 @@ export default function ListingsPanel() {
     const statuses = ['AVAILABLE', 'MAINTENANCE', 'RENTED'];
     const { vehicleService, authenticationService } = useGlobalServiceStore();
     const [listings, setListings] = useState<VehicleResult[]>([])
-    const router = useRouter();
 
     useEffect(() => {
-        setFilter(new VehicleFilterImpl("", true))
+        setFilter(new VehicleFilter("", true))
         const fetchMyListings = async () => {
-            const result = await doFilterReturnResult(authenticationService.getToken());
-            setListings(result);
+            const response: VehicleFilter = await doFilterReturnResult(authenticationService.getToken());
+            if (response.result) {
+                setListings(response.result);
+            }
         };
         fetchMyListings();
-    }, [setFilter, doFilterReturnResult, authenticationService, listings, setListings])
+    }, [setListings])
 
     const handleStatusChange = (newStatus: string, vehicleId: number): void => {
         vehicleService.updateStatus(newStatus, vehicleId).then(response => {

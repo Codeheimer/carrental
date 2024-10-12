@@ -17,11 +17,16 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
   return (
     <html lang="en">
       <body className={inter.className}>
-        <main className="flex flex-col">
-          <ClientAuthenticationInitializer />
-          <Header />
-          {children}
-          <ChatModule />
+        <main>
+          <div className="relative min-h-screen">
+            <div className="absolute inset-0 bg-cover bg-center filter blur-sm" style={{ backgroundImage: "url('/images/bg/bg.jpeg')" }}></div>
+            <div className="flex flex-col relative z-10 min-h-screen bg-white/50">
+              <ClientAuthenticationInitializer />
+              <Header />
+              {children}
+              <ChatModule />
+            </div>
+          </div>
         </main>
       </body>
     </html>

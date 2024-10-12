@@ -17,7 +17,7 @@ export class ChatServiceImpl extends BaseService implements ChatService {
 
     public connect = (token: string | null, userId: string, callbackFunction: (message: ChatMessage) => void): Promise<CompatClient> => {
         const url = `/user/${userId}/private-messages`;
-        console.log(`CONNECTING with ${url}`)
+        //console.log(`CONNECTING with ${url}`)
         return new Promise((resolve, reject) => {
             const client = Stomp.over(new SockJS('http://localhost:8080/mywebsocket'));
             client.debug = f => f; // REMOVE THE LOGGING!
@@ -66,7 +66,7 @@ export class ChatServiceImpl extends BaseService implements ChatService {
     public disconnect = (client: CompatClient): void => {
         if (client && client.connected) {
             client.disconnect(() => {
-                console.log('Disconnected from WebSocket.');
+                //console.log('Disconnected from WebSocket.');
             });
         }
     }

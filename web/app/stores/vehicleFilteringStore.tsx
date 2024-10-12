@@ -1,18 +1,26 @@
 import { create } from "zustand";
-import { VehicleResult } from "../components/resultsTable/resultsTable";
-import { VehicleFilter, VehicleFilterImpl } from "../services/vehicleService";
+import { VehicleFilter } from "../services/vehicleService";
 import useGlobalServiceStore from "./globalServiceStore";
+
+export interface VehicleResult {
+    id: number
+    title: string
+    description: string
+    ownerId: string
+    owner: string
+    age: string
+    status: string
+}
 
 interface VehicleFilteringStore {
     filter: VehicleFilter;
     setFilter: (newFilter: VehicleFilter) => void;
     doFilter: (token?: string | null) => void;
-    doFilterReturnResult: (token?: string | null) => Promise<VehicleResult[]>;
-    results: VehicleResult[];
+    doFilterReturnResult: (token?: string | null) => Promise<VehicleFilter>;
 }
 
 const useVehicleFilteringStore = create<VehicleFilteringStore>((set, get) => ({
-    filter: new VehicleFilterImpl(),
+    filter: new VehicleFilter(),
     setFilter: (newFilter: VehicleFilter) => {
         set({ filter: newFilter });
     },
@@ -21,14 +29,14 @@ const useVehicleFilteringStore = create<VehicleFilteringStore>((set, get) => ({
         const filter = get().filter;
         try {
             await vehicleService.filter(filter, token).then((response) => {
-                set({ results: response })
+                set({ filter: response })
             });
         } catch (error) {
             console.error("Error filtering, reason: ", error);
             return [];
         }
     },
-    doFilterReturnResult: async (token: string | null = null): Promise<VehicleResult[]> => {
+    doFilterReturnResult: async (token: string | null = null): Promise<VehicleFilter> => {
         const { vehicleService } = useGlobalServiceStore.getState();
         const filter = get().filter;
         try {
@@ -36,7 +44,7 @@ const useVehicleFilteringStore = create<VehicleFilteringStore>((set, get) => ({
             return response;
         } catch (error) {
             console.error("Error filtering, reason: ", error);
-            return [];
+            return filter;
         }
     },
     results: []

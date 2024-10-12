@@ -10,6 +10,8 @@ import com.thesis.carrental.repositories.VehicleRepository;
 import com.thesis.carrental.utils.DisplayUtil;
 import jakarta.persistence.NoResultException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,32 +37,43 @@ public class VehicleService {
 
     public VehicleResult find(final Long id) {
         final Optional<Vehicle> vehicle = vehicleRepository.findById(id);
-        if(vehicle.isPresent()) {
+        if (vehicle.isPresent()) {
             return this.toResult(vehicle.get());
         }
         throw new NoResultException("Vehicle not exists");
     }
 
-    public List<VehicleResult> filter(final VehicleFilter filter){
+    public VehicleFilter filter(final VehicleFilter filter) {
         return filter(filter, Optional.of(new Participant()).get());
     }
 
-    public List<VehicleResult> filter(final VehicleFilter filter, final Participant owner) {
-        final List<Vehicle> result = new ArrayList<>();
-        if (filter.own()) {
-            result.addAll(vehicleRepository.byOwner(owner.getId()));
-        } else if(filter.isEmptyFilter()){
-            result.addAll(vehicleRepository.findAll());
+    public VehicleFilter filter(final VehicleFilter filter, final Participant owner) {
+        Page<Vehicle> result;
+        if (filter.isOwn()) {
+            result = vehicleRepository.byOwner(owner.getId(), filter);
+        } else if (filter.isFilterEmpty()) {
+            result = vehicleRepository.findAll(filter);
         } else {
-            result.addAll(vehicleRepository.filter(
-                filter.make(),
-                filter.model(),
-                filter.year(),
-                filter.engineDisplacement(),
-                filter.seater()
-            ));
+            result = vehicleRepository.filter(
+                filter.getMake(),
+                filter.getModel(),
+                filter.getYear(),
+                filter.getEngineDisplacement(),
+                filter.getSeater(),
+                filter
+            );
         }
-        return result.stream().map(this::toResult).collect(Collectors.toList());
+        filter.setResult(toResults(result.getContent()));
+        filter.setTotalPages(result.getTotalPages());
+        filter.setTotalResult(result.getTotalElements());
+        return filter;
+    }
+
+    private List<VehicleResult> toResults(final List<Vehicle> vehicles) {
+        return vehicles
+            .stream()
+            .map(this::toResult)
+            .collect(Collectors.toList());
     }
 
     private VehicleResult toResult(final Vehicle vehicle) {
@@ -78,7 +91,9 @@ public class VehicleService {
             String.valueOf(owner.getId()),
             owner.getDisplayName(),
             DisplayUtil.generateVehicleListingAge(vehicle.getCreationDate()),
-            vehicle.getStatus()
+            vehicle.getStatus(),
+            vehicle.getPrice(),
+            vehicle.getPicture()
         );
     }
 

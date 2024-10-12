@@ -1,6 +1,8 @@
 package com.thesis.carrental.repositories;
 
 import com.thesis.carrental.entities.Vehicle;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,14 +20,15 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
         "AND ( :engineDisplacement IS NULL OR :engineDisplacement = v.engineDisplacement) " +
         "AND ( :seater is NULL OR :seater = v.seater ) " +
         "AND ( status NOT IN ('MAINTENANCE','RENTED') )")
-    List<Vehicle> filter(
+    Page<Vehicle> filter(
         @Param("make") final String make,
         @Param("model") final String model,
         @Param("year") final String year,
         @Param("engineDisplacement") final String engineDisplacement,
-        @Param("seater") final Integer seater
+        @Param("seater") final Integer seater,
+        Pageable pageable
     );
 
     @Query("SELECT v FROM Vehicle v WHERE :owner = v.owner ")
-    List<Vehicle> byOwner(@Param("owner") final Long owner);
+    Page<Vehicle> byOwner(@Param("owner") final Long owner, Pageable pageable);
 }

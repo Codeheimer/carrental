@@ -1,8 +1,9 @@
 import { AxiosRequestConfig } from 'axios';
 import { BaseService } from './baseService';
-import { VehicleResult } from '../components/resultsTable/resultsTable';
+import { VehicleResult } from '../stores/vehicleFilteringStore';
 
 export interface Vehicle {
+    plateNumber: string
     make: string
     model: string
     year: string
@@ -12,6 +13,7 @@ export interface Vehicle {
     owner: number
     latitude: number
     longitude: number
+    title: string
 }
 
 export interface VehicleSaveResponse {
@@ -19,27 +21,47 @@ export interface VehicleSaveResponse {
     success: boolean
 }
 
-export interface VehicleFilter {
-    search: string,
-    own: boolean
+export interface IVehicleFilter {
+    search?: string;
+    make?: string;
+    model?: string;
+    year?: string;
+    engineDisplacement?: string;
+    seater?: number;
+    own?: boolean;
+    result?: VehicleResult[];
+    pageNumber?: number;
+    pageSize?: number;
+    totalPages?: number;
+    totalResult?: number;
 }
 
 export interface VehicleService {
     save: (vehicle: Vehicle, token: string | null) => Promise<VehicleSaveResponse>;
-    filter: (filter: VehicleFilter, token?: string | null) => Promise<VehicleResult[]>;
+    filter: (filter: VehicleFilter, token?: string | null) => Promise<VehicleFilter>;
     fetch: (id: string) => Promise<VehicleResult>;
     updateStatus: (newStatus: string, vehicleId: number) => Promise<VehicleSaveResponse>;
 
 }
 
-export class VehicleFilterImpl implements VehicleFilter {
+export class VehicleFilter implements IVehicleFilter {
     constructor(
         public search: string = "",
-        public own: boolean = false
+        public own: boolean = false,
+        public make: string = "",
+        public model: string = "",
+        public year: string = "",
+        public engineDisplacement: string = "",
+        public seater: number = 0,
+        public result: VehicleResult[] = [] as VehicleResult[],
+        public pageNumber: number = 0,
+        public pageSize: number = 10,
+        public totalPages: number = 0,
+        public totalResult: number = 0
     ) { }
 }
 
-export class VehicleServiceImpl extends BaseService implements VehicleService {
+export class VehicleService extends BaseService implements VehicleService {
 
     public save = async (vehicle: Vehicle, token: string | null): Promise<VehicleSaveResponse> => {
         try {
@@ -58,7 +80,7 @@ export class VehicleServiceImpl extends BaseService implements VehicleService {
         }
     };
 
-    public filter = async (filter: VehicleFilter, token?: string | null): Promise<VehicleResult[]> => {
+    public filter = async (filter: VehicleFilter, token?: string | null): Promise<VehicleFilter> => {
         try {
 
             const URL = `${this.getBaseURL()}${process.env.VEHICLE_FILTER}`;
@@ -67,7 +89,7 @@ export class VehicleServiceImpl extends BaseService implements VehicleService {
                 headers: this.getHeaders(token),
                 data: { ...filter }
             }
-            const response = await this.doRequest<VehicleResult[]>(URL, axiosConfig);
+            const response = await this.doRequest<VehicleFilter>(URL, axiosConfig);
 
             return response;
         } catch (error) {

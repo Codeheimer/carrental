@@ -5,6 +5,7 @@ import HeaderLink from "./header/headerLink";
 import GenericButton, { ButtonDetails } from "./fields/genericButton";
 import { useRouter } from "next/navigation";
 import useAuthStore from "../stores/authStore";
+import Link from "next/link";
 
 export default function Header() {
     const { authenticationService } = useGlobalServiceStore();
@@ -26,7 +27,7 @@ export default function Header() {
     }
 
     return (
-        <nav className="z-50 bg-white sticky top-0 shadow-md flex items-center justify-between px-8 py-02">
+        <nav className="z-50 sticky top-0 shadow-md flex items-center justify-between px-8 py-02">
             <nav className="nav font-semibold text-lg">
                 <ul className="flex items-center">
                     {session.headerLinks.map((link, key) =>

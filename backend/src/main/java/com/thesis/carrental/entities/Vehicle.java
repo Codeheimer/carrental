@@ -23,6 +23,7 @@ public class Vehicle extends PersistentEntity {
 
     private Long owner;
 
+    @Column(name = "plate_number")
     private String plateNumber;
 
     private Double latitude;
@@ -30,6 +31,11 @@ public class Vehicle extends PersistentEntity {
     private Double longitude;
 
     private String status;
+
+    @Column(name="daily_price")
+    private double price;
+
+    private String picture;
 
     public String getMake() {
         return make;
@@ -125,5 +131,21 @@ public class Vehicle extends PersistentEntity {
 
     public void setStatus(final String status) {
         this.status = status;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(final double price) {
+        this.price = price;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(final String picture) {
+        this.picture = picture;
     }
 }
