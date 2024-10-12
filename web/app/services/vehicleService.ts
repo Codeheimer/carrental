@@ -2,7 +2,7 @@ import { AxiosRequestConfig } from 'axios';
 import { BaseService } from './baseService';
 import { VehicleResult } from '../stores/vehicleFilteringStore';
 
-export interface Vehicle {
+export interface IVehicle {
     plateNumber: string
     make: string
     model: string
@@ -10,10 +10,30 @@ export interface Vehicle {
     engineDisplacement: string
     seater: number
     description: string
-    owner: number
+    owner: string
     latitude: number
     longitude: number
-    title: string
+    title: string,
+    ownerId: number
+}
+
+export class Vehicle implements IVehicle {
+    constructor(
+        public plateNumber: string = "",
+        public make: string = "",
+        public model: string = "",
+        public year: string = "",
+        public engineDisplacement: string = "",
+        public seater: number = 0,
+        public description: string = "",
+        public owner: string = "",
+        public latitude: number = 0,
+        public longitude: number = 0,
+        public title: string = "",
+        public ownerId: number = 0
+    ) {
+
+    }
 }
 
 export interface VehicleSaveResponse {
@@ -39,7 +59,7 @@ export interface IVehicleFilter {
 export interface VehicleService {
     save: (vehicle: Vehicle, token: string | null) => Promise<VehicleSaveResponse>;
     filter: (filter: VehicleFilter, token?: string | null) => Promise<VehicleFilter>;
-    fetch: (id: string) => Promise<VehicleResult>;
+    fetch: (id: string) => Promise<Vehicle>;
     updateStatus: (newStatus: string, vehicleId: number) => Promise<VehicleSaveResponse>;
 
 }
@@ -98,14 +118,14 @@ export class VehicleService extends BaseService implements VehicleService {
         }
     }
 
-    public fetch = async (id: string): Promise<VehicleResult> => {
+    public fetch = async (id: string): Promise<Vehicle> => {
         try {
             const URL = `${this.getBaseURL()}${process.env.VEHICLE_FILTER}${id}`;
             const axiosConfig: AxiosRequestConfig = {
                 method: 'GET',
                 headers: this.getHeaders()
             }
-            const response = await this.doRequest<VehicleResult>(URL, axiosConfig);
+            const response = await this.doRequest<Vehicle>(URL, axiosConfig);
 
             return response;
         } catch (error) {

@@ -204,7 +204,8 @@ export default function DevPanel() {
         dummyListings.forEach(l => {
             const newL: Vehicle = {
                 ...l,
-                owner: Number(session.userId),
+                owner: "",
+                ownerId: Number(session.userId),
                 seater: Number(l.seater),
                 latitude: 0,
                 longitude: 0

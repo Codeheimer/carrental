@@ -21,7 +21,7 @@ export default function OtherMessage(chat: ChatMessage) {
         </div>
         <div className="flex flex-col items-start">
             <span className="block font-extrabold text-gray-700 my-1">
-                {currentConversation?.recipientName}
+                {currentConversation?.conversationTitle}
             </span>
             <p className="tracking-wider max-w-[300px] my-1 font-medium text-white bg-blue-400 p-2 rounded-3xl whitespace-normal break-words">
                 {chat.message}

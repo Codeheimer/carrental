@@ -1,11 +1,10 @@
 'use client';
 
 import GenericButton, { createButtonDetails } from "@/app/components/fields/genericButton";
-import { VehicleResult } from "@/app/components/resultsTable/resultsTable";
 import AuthenticatedPage from "@/app/components/security/authenticatedPage";
 import { VehicleFilter } from "@/app/services/vehicleService";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
-import useVehicleFilteringStore from "@/app/stores/vehicleFilteringStore";
+import useVehicleFilteringStore, { VehicleResult } from "@/app/stores/vehicleFilteringStore";
 import { useEffect, useState } from "react";
 
 export default function ListingsPanel() {

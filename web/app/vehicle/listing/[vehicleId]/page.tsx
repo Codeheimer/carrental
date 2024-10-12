@@ -1,7 +1,7 @@
 'use client';
 import VehiclePreviewCard from "@/app/components/card/vehiclePreviewCard";
 import GenericButton, { createButtonDetails } from "@/app/components/fields/genericButton";
-import { VehicleResult } from "@/app/components/resultsTable/resultsTable";
+import { Vehicle } from "@/app/services/vehicleService";
 import useAuthStore from "@/app/stores/authStore";
 import useChatStore, { ConversationImpl } from "@/app/stores/chatStore";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
@@ -14,7 +14,7 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
     const { chatOpen, toggleChat, setCurrentConversation, setConversations, conversations } = useChatStore();
     const { vehicleService } = useGlobalServiceStore();
     const { session } = useAuthStore();
-    const [listing, setListing] = useState<VehicleResult>({} as VehicleResult);
+    const [listing, setListing] = useState<Vehicle>(new Vehicle());
     const router = useRouter();
     const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -47,7 +47,7 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
         fetchVehicle();
     }, [params.vehicleId, vehicleService])
 
-    const handleInitiateChatWithRenter = (listingOwnerId: string, owner: string) => {
+    const handleInitiateChatWithRenter = (listingOwnerId: number, owner: string) => {
         if (!session.loggedIn) {
             router.push("/login");
             return;
@@ -55,7 +55,7 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
         if (!chatOpen) {
             const existingConversation = conversations.find(c => Number(c.sendToId) === Number(listingOwnerId));
             if (!existingConversation) {
-                const newConversation = new ConversationImpl("0", listingOwnerId, owner);
+                const newConversation = new ConversationImpl("0", String(listingOwnerId), owner);
                 setCurrentConversation(newConversation);
                 const updatedConversations = [...conversations, newConversation];
                 setConversations(updatedConversations);
@@ -97,7 +97,7 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
     }
 
     const isLoggedInUserSameAsListingOwner = (): boolean => {
-        return Number(session.userId ? session.userId : 0) === Number(listing.ownerId);
+        return Number(session.userId ? session.userId : 0) === listing.ownerId;
     }
 
     const handleClickRenter = () => {
