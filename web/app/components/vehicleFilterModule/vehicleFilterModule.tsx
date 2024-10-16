@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { beautifyVehicleAge, truncate } from "@/app/utilities/stringUtils";
 import PaginationButton from "../pagination/paginationButton";
 import PaginationIcon from "../svg/paginationIcon";
+import { Card, CardContent, CardDescription, CardFooter, CardTitle } from "../card/card";
 
 export default function VehicleFilterModule() {
 
@@ -50,27 +51,27 @@ export default function VehicleFilterModule() {
             </div>
             <div className="grid grid-cols-5 grid-rows-8 gap-3 col-span-5 row-span-8 m-1 p-1">
                 {filter.result.map(card => (
-                    <div key={card.id} onClick={() => handleViewListing(card.id)} className="hover:cursor-pointer duration-300 ease-in-out transition-transform transform hover:-translate-y-2 grid col-span-1 row-span-4 rounded-xl bg-white opacity-90">
+                    <Card key={card.id} onClick={() => handleViewListing(card.id)} className="hover:cursor-pointer duration-300 ease-in-out transition-transform transform hover:-translate-y-2 grid col-span-1 row-span-4 rounded-xl opacity-90">
                         <div className="grid grid-cols-1 grid-rows-5">
                             <div className="row-span-2 rounded-tl-xl rounded-tr-xl bg-gray-300">
                             </div>
                             <div className="row-span-3 m-1 p-1 grid grid-cols-1 grid-rows-6">
-                                <div className="row-span-2">
+                                <CardTitle className="row-span-2">
                                     <h2 className="line-clamp-2" title={card.title}>
                                         {card.title}
                                     </h2>
-                                </div>
-                                <div className="row-span-3">
+                                </CardTitle>
+                                <CardDescription className="row-span-3">
                                     <p className="line-clamp-3">
                                         {truncate(card.description, TRUNCATE_LENGTH)}
                                     </p>
-                                </div>
-                                <div className="row-span-1 flex font-light items-end justify-end m-1 p-1">
+                                </CardDescription>
+                                <CardFooter className="row-span-1 flex font-light items-end justify-end m-1 p-1">
                                     {beautifyVehicleAge(card.age)}
-                                </div>
+                                </CardFooter>
                             </div>
                         </div>
-                    </div>
+                    </Card>
                 )
                 )}
             </div>

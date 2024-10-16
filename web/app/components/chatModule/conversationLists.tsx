@@ -16,9 +16,9 @@ export default function ConversationList() {
     }, [conversations])
 
     return (<div style={{ boxShadow: "0 0 0 #0000, 0 0 0 #0000, 0 1px 2px 0 rgba(0, 0, 0, 0.05)" }}
-        className="fixed bottom-[calc(4rem+1.5rem)] right-0 mr-4 bg-white shadow-md rounded-lg border border-[#e5e7eb] w-[440px] h-[620px]">
-        <div className="py-3 sm:px-6 border-b border-gray-200">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Chat Messages</h3>
+        className="bg-background text-foreground fixed bottom-[calc(4rem+1.5rem)] right-0 mr-4 shadow-md rounded-lg w-[440px] h-[620px]">
+        <div className="py-3 sm:px-6 border-b">
+            <h3 className="text-lg leading-6 font-medium">Chat Messages</h3>
         </div>
         {conversations.length === 0 ? <div className="flex h-full w-full justify-center items-center">No conversations.</div>
             : (<ul className="divide-y divide-gray-200 overflow-y-auto h-[568px]">
@@ -31,8 +31,8 @@ export default function ConversationList() {
                                 </div>
                             </div>
                             <div className={`flex-1 min-w-0 ${convo.unread && 'font-black'}`}>
-                                <p className="flex flex-row text-sm text-gray-900 truncate">{convo.conversationTitle}</p>
-                                <p className="text-sm text-gray-500">{truncate(convo.senderLastMessage, 50)}</p>
+                                <p className="flex flex-row truncate">{convo.conversationTitle}</p>
+                                <p className="text-sm">{truncate(convo.senderLastMessage, 50)}</p>
                             </div>
                         </div>
                     </li>)}

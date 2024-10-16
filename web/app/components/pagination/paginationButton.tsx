@@ -1,3 +1,4 @@
+import { Button } from "../shadcn/button"
 
 export interface PaginationButtonProps {
     children?: React.ReactElement,
@@ -6,7 +7,7 @@ export interface PaginationButtonProps {
 }
 
 export default function PaginationButton({ children = <>{"Button"}</>, disabled, onClick }: PaginationButtonProps) {
-    return (<button disabled={disabled}
+    return (<Button disabled={disabled}
         onClick={onClick}
         className={`
             flex 
@@ -15,11 +16,11 @@ export default function PaginationButton({ children = <>{"Button"}</>, disabled,
             py-1 
             text-sm 
             font-medium 
-            text-gray-700 
             border 
-            border-gray-300 
-            rounded-md 
-        ${disabled ? 'bg-gray-200' : 'bg-white hover:bg-gray-200'}`}>
+            rounded-md
+            bg-background 
+            text-foreground
+            `}>
         {children}
-    </button>)
+    </Button>)
 }

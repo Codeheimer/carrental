@@ -14,33 +14,33 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class FileUploadService {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileUploadService.class);
-    private final String uploadDir;
 
     private final FileUploadRepository fileUploadRepository;
 
     @Autowired
     public FileUploadService(
-        @Value("${fileupload.dir}") final String uploadDir,
         FileUploadRepository fileUploadRepository
     ) {
-        this.uploadDir = uploadDir;
         this.fileUploadRepository = fileUploadRepository;
     }
 
     public boolean saveFile(
-        final Long participantId,
+        final Long id,
         final MultipartFile file,
-        final FileUploadType type
+        final FileUploadType type,
+        final String directory
     ) {
         try {
-            final String ownerDir = uploadDir + "/" + participantId;
+            final String ownerDir = directory + "/" + id;
             final Path path = Paths.get(ownerDir);
 
             if (!Files.exists(path)) {
@@ -48,10 +48,10 @@ public class FileUploadService {
             }
 
             byte[] bytes = file.getBytes();
-            String fileName = type + "-" + file.getOriginalFilename();
+            String fileName = type + "-" + new Date().getTime();
             Path filePath = path.resolve(fileName);
             Files.write(filePath, bytes);
-            fileUploadRepository.save(new FileUpload(participantId, ownerDir + "/" + fileName));
+            fileUploadRepository.save(new FileUpload(id, ownerDir + "/" + fileName));
             return true;
         } catch (Exception e) {
             LOG.error("Error uploading file, reason: {}", e.getMessage());

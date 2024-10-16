@@ -7,11 +7,8 @@ import GenericButton, { ButtonDetails } from "../components/fields/genericButton
 import Textbox, { TextboxDetails } from "../components/fields/textbox";
 import useGlobalServiceStore from "../stores/globalServiceStore";
 import { useRouter } from "next/navigation";
-import FileUpload from "../components/fields/fileUpload";
-import Checkbox from "../components/fields/checkbox";
-
-export interface RegistrationDetails {
-}
+import FileUpload, { FileuploadDetails } from "../components/fields/fileUpload";
+import Checkbox, { CheckboxDetails } from "../components/fields/checkbox";
 
 export default function RegistrationPage() {
     const [error, setError] = useState(defaultErrorDetails);
@@ -65,11 +62,13 @@ export default function RegistrationPage() {
             console.log("adding business Permit")
             data.append('businessPermit', businessPermit);
         }
-        
+
         registrationService.register(data).then((response) => {
-            alert(response);
-            formRef.current?.reset();
-            router.push("/login");
+            alert(response.message);
+            if (response.success) {
+                formRef.current?.reset();
+                router.push("/login");
+            }
         }).catch(error => {
             alert(error);
         });
@@ -90,8 +89,8 @@ export default function RegistrationPage() {
         }
     };
 
-    const toggleBusinessPermit = (e: ChangeEvent<HTMLInputElement>) => {
-        setShowBusinessPermitUpload(!showBusinessPermitUpload);
+    const toggleBusinessPermit = (checked: boolean): void => {
+        setShowBusinessPermitUpload(!checked);
     };
 
     const firstName: TextboxDetails = {
@@ -155,24 +154,16 @@ export default function RegistrationPage() {
         isRequired: true
     }
 
-    const identificationUpload: TextboxDetails = {
-        label: "Upload ID",
-        name: "identification",
-        isRequired: true,
-        onChangeEvent: handleIdentificationUpload
-    }
+    const identificationUpload: FileuploadDetails = new FileuploadDetails("Upload ID", "identification", false, false, true, handleIdentificationUpload);
 
-    const businessPermitUpload: TextboxDetails = {
-        label: "Upload Business Permit",
-        name: "businessPermit",
-        isRequired: true,
-        onChangeEvent: handleBusinessPermitUpload
-    }
+    const businessPermitUpload: FileuploadDetails = new FileuploadDetails("Upload Business Permit", "businessPermit", true, false, false, handleBusinessPermitUpload);
 
-    const checkboxBusinessPermit: TextboxDetails = {
+    const checkboxBusinessPermit: CheckboxDetails = {
+        isRequired: false,
+        isHidden: false,
         label: "is Owner?",
         name: "businessOwner",
-        onChangeEvent: toggleBusinessPermit
+        onChangeEvent: () => toggleBusinessPermit(showBusinessPermitUpload)
     }
 
     const registerButton: ButtonDetails = {

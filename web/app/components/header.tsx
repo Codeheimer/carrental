@@ -6,6 +6,7 @@ import GenericButton, { ButtonDetails } from "./fields/genericButton";
 import { useRouter } from "next/navigation";
 import useAuthStore from "../stores/authStore";
 import Link from "next/link";
+import { ThemeToggle } from "./themeToggle";
 
 export default function Header() {
     const { authenticationService } = useGlobalServiceStore();
@@ -44,6 +45,9 @@ export default function Header() {
                 </div>}
                 <div>
                     {session.loggedIn ? <form><GenericButton {...logout} /></form> : <HeaderLink label={'Login'} path={'/login'} />}
+                </div>
+                <div>
+                    <ThemeToggle />
                 </div>
             </div>
         </nav>)

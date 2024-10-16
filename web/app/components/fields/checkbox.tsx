@@ -1,22 +1,34 @@
 import { ChangeEvent } from "react"
 import { Field } from "./field"
+import { Input } from "../shadcn/input"
+import { Checkbox } from "../shadcn/checkbox"
 
 
 export interface CheckboxDetails extends Field {
-    onChangeEvent?: (event: ChangeEvent<HTMLInputElement>) => void,
+    label: string,
+    name: string,
+    isRequired: boolean,
+    isHidden: boolean,
+    onChangeEvent?: (checked: boolean) => void,
 }
 
-export default function Checkbox(details: CheckboxDetails) {
+export const createCheckboxDetails = (
+    label: string,
+    name: string,
+    isRequired: boolean = false,
+    isHidden: boolean = false,
+    onChangeEvent: (checked: boolean) => void = (checked) => { }
+): CheckboxDetails => {
+    return { label, name, isRequired, isHidden, onChangeEvent };
+}
+
+export default function CheckBox(details: CheckboxDetails) {
     return (<div className="flex m-3">
-        <div>
-            <label htmlFor={details.name} className="block text-gray-800 font-semibold text-sm">{details.label}</label>
-        </div>
+        <label htmlFor={details.name} className="block font-semibold text-sm">{details.label}</label>
         <div className="mx-3">
-            <input required={details.isRequired}
-                type="checkbox"
+            <Checkbox required={details.isRequired}
                 name={details.name}
-                className=""
-                onChange={details.onChangeEvent} />
+                onCheckedChange={details.onChangeEvent} />
         </div>
     </div>)
 }
