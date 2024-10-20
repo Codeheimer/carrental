@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
-export default function ImageLoader({ src, alt, className, objectFit = "cover" }: { src: string, alt: string, className: string, objectFit?: string }) {
+export default function ImageLoader({ src, alt, className, objectFit = "cover", layout = "fill", ratio1to1 = false }: { src: string, alt: string, className: string, objectFit?: string, layout?: string, ratio1to1?: boolean }) {
     const { resourceService } = useGlobalServiceStore();
     const { session } = useAuthStore();
     const [ref, inView] = useInView({ triggerOnce: true });
@@ -20,12 +20,12 @@ export default function ImageLoader({ src, alt, className, objectFit = "cover" }
     }, [inView, src]);
 
     return (
-        <div ref={ref} className={`${className} relative overflow-hidden`}>
+        <div ref={ref} className={`${className} relative overflow-hidden`} style={{ aspectRatio: ratio1to1 ? '1 / 1' : 'auto' }} >
             {imageSrc && (
                 <Image
                     src={imageSrc}
                     alt={alt}
-                    layout="fill"
+                    layout={layout}
                     objectFit={objectFit}
                     onLoad={() => URL.revokeObjectURL(imageSrc)}
                 />

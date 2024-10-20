@@ -16,7 +16,7 @@ export interface IVehicle {
     title: string,
     ownerId: number,
     price: number,
-    pictures : string[]
+    pictures: string[]
 }
 
 export class Vehicle implements IVehicle {
@@ -58,6 +58,7 @@ export interface IVehicleFilter {
     pageSize?: number;
     totalPages?: number;
     totalResult?: number;
+    ownerId: number;
 }
 
 export interface VehicleService {
@@ -81,8 +82,13 @@ export class VehicleFilter implements IVehicleFilter {
         public pageNumber: number = 0,
         public pageSize: number = 10,
         public totalPages: number = 0,
-        public totalResult: number = 0
+        public totalResult: number = 0,
+        public ownerId: number = 0
     ) { }
+
+    static withOwnerId(ownerId: number): VehicleFilter {
+        return new VehicleFilter("", false, "", "", "", "", 0, [], 0, 10, 0, 0, ownerId);
+    }
 }
 
 export class VehicleService extends BaseService implements VehicleService {

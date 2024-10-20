@@ -18,7 +18,7 @@ interface VehicleFilteringStore {
     filter: VehicleFilter;
     setFilter: (newFilter: VehicleFilter) => void;
     doFilter: (token?: string | null) => void;
-    doFilterReturnResult: (token?: string | null) => Promise<VehicleFilter>;
+    doFilterReturnResult: (token?: string | null, filter?: VehicleFilter) => Promise<VehicleFilter>;
 }
 
 const useVehicleFilteringStore = create<VehicleFilteringStore>((set, get) => ({
@@ -38,9 +38,8 @@ const useVehicleFilteringStore = create<VehicleFilteringStore>((set, get) => ({
             return [];
         }
     },
-    doFilterReturnResult: async (token: string | null = null): Promise<VehicleFilter> => {
+    doFilterReturnResult: async (token: string | null = null, filter: VehicleFilter = get().filter): Promise<VehicleFilter> => {
         const { vehicleService } = useGlobalServiceStore.getState();
-        const filter = get().filter;
         try {
             const response = await vehicleService.filter(filter, token);
             return response;

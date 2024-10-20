@@ -2,10 +2,11 @@
 import VehiclePreviewCard from "@/app/components/card/vehiclePreviewCard";
 import GenericButton, { createButtonDetails } from "@/app/components/fields/genericButton";
 import ImageLoader from "@/app/components/images/imageLoader";
-import { Vehicle } from "@/app/services/vehicleService";
+import { Vehicle, VehicleFilter } from "@/app/services/vehicleService";
 import useAuthStore from "@/app/stores/authStore";
 import useChatStore, { ConversationImpl } from "@/app/stores/chatStore";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
+import useVehicleFilteringStore, { VehicleResult } from "@/app/stores/vehicleFilteringStore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -15,7 +16,9 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
     const { chatOpen, toggleChat, setCurrentConversation, setConversations, conversations } = useChatStore();
     const { vehicleService } = useGlobalServiceStore();
     const { session } = useAuthStore();
+    const { doFilterReturnResult } = useVehicleFilteringStore();
     const [listing, setListing] = useState<Vehicle>(new Vehicle());
+    const [renterListings, setRenterListings] = useState<VehicleResult[]>([]);
     const router = useRouter();
     const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -40,12 +43,23 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
     }, []);
 
     useEffect(() => {
+        const filterRenterOtherListings = async () => {
+            const filter = VehicleFilter.withOwnerId(listing.ownerId);
+            const response = await doFilterReturnResult(null, filter);
+
+            if (response) {
+                const updatedResult = response.result.filter(v => v.id == Number(params.vehicleId) ? null : v)
+                setRenterListings(updatedResult);
+            }
+        }
+
         const fetchVehicle = () => {
             vehicleService.fetch(params.vehicleId).then((response) => {
                 setListing(response);
             })
         }
         fetchVehicle();
+        filterRenterOtherListings();
     }, [params.vehicleId, vehicleService])
 
     const handleInitiateChatWithRenter = (listingOwnerId: number, owner: string) => {
@@ -106,10 +120,6 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
         router.push(`/user/profile/${session.userId}`);
     }
 
-    const handleClickImage = () => {
-        alert("CLICKED!")
-    }
-
     return (
         <div className="flex flex-col items-start justify-center py-6 2xl:px-10 md:px-6 px-4 min-h-screen">
             <div className="flex flex-row w-full">
@@ -154,9 +164,9 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
             </div>
             <div className="flex flex-col w-full p-4 rounded-xl shadow-lg min-h-[391px]">
                 <div>More from renter</div>
-                <div ref={scrollRef} className="flex flex-row overflow-x-auto whitespace-nowrap">
-                    {Array.from({ length: 50 }, (_, index) => (
-                        <VehiclePreviewCard key={index} />
+                <div ref={scrollRef} className="flex flex-row">
+                    {renterListings.map((listing, index) => (
+                        <VehiclePreviewCard {...listing} key={index} />
                     ))}
                 </div>
             </div>
