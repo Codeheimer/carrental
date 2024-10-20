@@ -10,6 +10,8 @@ export interface VehicleResult {
     owner: string
     age: string
     status: string
+    pictures: string[]
+    price: number
 }
 
 interface VehicleFilteringStore {

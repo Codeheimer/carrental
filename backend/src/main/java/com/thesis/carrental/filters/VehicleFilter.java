@@ -2,8 +2,6 @@ package com.thesis.carrental.filters;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.thesis.carrental.dtos.VehicleResult;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;

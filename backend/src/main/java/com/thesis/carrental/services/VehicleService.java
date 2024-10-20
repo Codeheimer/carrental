@@ -2,8 +2,10 @@ package com.thesis.carrental.services;
 
 import com.thesis.carrental.dtos.VehicleResult;
 import com.thesis.carrental.dtos.VehicleUpdateRequest;
+import com.thesis.carrental.entities.FileUpload;
 import com.thesis.carrental.entities.Participant;
 import com.thesis.carrental.entities.Vehicle;
+import com.thesis.carrental.enums.FileUploadType;
 import com.thesis.carrental.enums.VehicleStatus;
 import com.thesis.carrental.filters.VehicleFilter;
 import com.thesis.carrental.repositories.VehicleRepository;
@@ -15,9 +17,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.thesis.carrental.enums.FileUploadType.VEHICLE_PICTURE;
 
 @Service
 public class VehicleService {
@@ -26,19 +32,26 @@ public class VehicleService {
 
     private final ParticipantService participantService;
 
+    private final FileUploadService fileUploadService;
+
     @Autowired
     public VehicleService(
         VehicleRepository vehicleRepository,
-        ParticipantService participantService
+        ParticipantService participantService, FileUploadService fileUploadService
     ) {
         this.vehicleRepository = vehicleRepository;
         this.participantService = participantService;
+        this.fileUploadService = fileUploadService;
     }
 
     public VehicleResult find(final Long id) {
         final Optional<Vehicle> vehicle = vehicleRepository.findById(id);
         if (vehicle.isPresent()) {
-            return this.toResult(vehicle.get());
+            final Vehicle v = vehicle.get();
+            return this.toResult(v, fileUploadService.fetchByOwnerIds(
+                List.of(v.getId()),
+                List.of(VEHICLE_PICTURE)
+            ));
         }
         throw new NoResultException("Vehicle not exists");
     }
@@ -63,20 +76,29 @@ public class VehicleService {
                 filter
             );
         }
-        filter.setResult(toResults(result.getContent()));
+        final List<Vehicle> results = result.getContent();
+        final List<Long> ids = results.stream().map(Vehicle::getId).toList();
+        final Map<Long, List<FileUpload>> uploadsByVehicle = fileUploadService
+            .fetchByOwnerIds(ids, List.of(VEHICLE_PICTURE)).stream()
+            .collect(Collectors.groupingBy(FileUpload::getOwnerId));
+
+        filter.setResult(toResults(result.getContent(), uploadsByVehicle));
         filter.setTotalPages(result.getTotalPages());
         filter.setTotalResult(result.getTotalElements());
         return filter;
     }
 
-    private List<VehicleResult> toResults(final List<Vehicle> vehicles) {
+    private List<VehicleResult> toResults(
+        final List<Vehicle> vehicles,
+        Map<Long, List<FileUpload>> uploads
+    ) {
         return vehicles
             .stream()
-            .map(this::toResult)
+            .map(v -> toResult(v, uploads.get(v.getId())))
             .collect(Collectors.toList());
     }
 
-    private VehicleResult toResult(final Vehicle vehicle) {
+    private VehicleResult toResult(final Vehicle vehicle, final List<FileUpload> pictures) {
         final Participant owner = participantService.findById(vehicle.getOwner());
         return new VehicleResult(
             vehicle.getId(),
@@ -93,7 +115,7 @@ public class VehicleService {
             DisplayUtil.generateVehicleListingAge(vehicle.getCreationDate()),
             vehicle.getStatus(),
             vehicle.getPrice(),
-            vehicle.getPicture()
+            pictures.stream().map(FileUpload::getPath).limit(1).collect(Collectors.toList())
         );
     }
 

@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 import { beautifyVehicleAge, truncate } from "@/app/utilities/stringUtils";
 import PaginationButton from "../pagination/paginationButton";
 import PaginationIcon from "../svg/paginationIcon";
-import { Card, CardContent, CardDescription, CardFooter, CardTitle } from "../card/card";
-
+import { Card, CardDescription, CardFooter, CardTitle } from "../card/card";
+import ImageLoader from "../images/imageLoader";
 export default function VehicleFilterModule() {
 
     const TRUNCATE_LENGTH = 100;
@@ -23,7 +23,6 @@ export default function VehicleFilterModule() {
 
     const handleSubmit = (event: React.FormEvent) => {
         const json: VehicleFilter = { ...filter, ...generateJSONFromForm(event), result: [], pageNumber: 0 };
-        console.log(JSON.stringify(json))
         setFilter(json);
         event.preventDefault();
         doFilter();
@@ -53,8 +52,9 @@ export default function VehicleFilterModule() {
                 {filter.result.map(card => (
                     <Card key={card.id} onClick={() => handleViewListing(card.id)} className="hover:cursor-pointer duration-300 ease-in-out transition-transform transform hover:-translate-y-2 grid col-span-1 row-span-4 rounded-xl opacity-90">
                         <div className="grid grid-cols-1 grid-rows-5">
-                            <div className="row-span-2 rounded-tl-xl rounded-tr-xl bg-gray-300">
-                            </div>
+                            {card.pictures.map((url, key) =>
+                                <ImageLoader key={key} src={url} alt={`picture`} className={`row-span-2 rounded-tl-xl rounded-tr-xl w-full h-full`} />)
+                            }
                             <div className="row-span-3 m-1 p-1 grid grid-cols-1 grid-rows-6">
                                 <CardTitle className="row-span-2">
                                     <h2 className="line-clamp-2" title={card.title}>
@@ -66,8 +66,11 @@ export default function VehicleFilterModule() {
                                         {truncate(card.description, TRUNCATE_LENGTH)}
                                     </p>
                                 </CardDescription>
-                                <CardFooter className="row-span-1 flex font-light items-end justify-end m-1 p-1">
-                                    {beautifyVehicleAge(card.age)}
+                                <CardFooter className="row-span-1 flex flex-row text-sm font-light justify-between m-1 p-0">
+                                    <div>
+                                        <span className="font-bold text-xl text-teal-600 dark:text-teal-400">${card.price}<span className="text-sm font-normal">/day</span></span>
+                                    </div>
+                                    <div>{beautifyVehicleAge(card.age)}</div>
                                 </CardFooter>
                             </div>
                         </div>

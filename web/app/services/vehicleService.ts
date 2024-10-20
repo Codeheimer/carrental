@@ -14,7 +14,9 @@ export interface IVehicle {
     latitude: number
     longitude: number
     title: string,
-    ownerId: number
+    ownerId: number,
+    price: number,
+    pictures : string[]
 }
 
 export class Vehicle implements IVehicle {
@@ -30,7 +32,9 @@ export class Vehicle implements IVehicle {
         public latitude: number = 0,
         public longitude: number = 0,
         public title: string = "",
-        public ownerId: number = 0
+        public ownerId: number = 0,
+        public price: number = 0.00,
+        public pictures: string[] = []
     ) {
 
     }
@@ -57,7 +61,7 @@ export interface IVehicleFilter {
 }
 
 export interface VehicleService {
-    save: (vehicle: Vehicle, token: string | null) => Promise<VehicleSaveResponse>;
+    save: (data: FormData, token: string | null) => Promise<VehicleSaveResponse>;
     filter: (filter: VehicleFilter, token?: string | null) => Promise<VehicleFilter>;
     fetch: (id: string) => Promise<Vehicle>;
     updateStatus: (newStatus: string, vehicleId: number) => Promise<VehicleSaveResponse>;
@@ -83,13 +87,13 @@ export class VehicleFilter implements IVehicleFilter {
 
 export class VehicleService extends BaseService implements VehicleService {
 
-    public save = async (vehicle: Vehicle, token: string | null): Promise<VehicleSaveResponse> => {
+    public save = async (data: FormData, token: string | null): Promise<VehicleSaveResponse> => {
         try {
             const URL = `${this.getBaseURL()}${process.env.VEHICLE_SAVE}`;
             const axiosConfig: AxiosRequestConfig = {
                 method: 'POST',
-                headers: this.getHeaders(token),
-                data: { ...vehicle }
+                headers: { ...this.getHeaders(token), 'Content-Type': 'multipart/form-data' },
+                data: data
             }
             const response = await this.doRequest<VehicleSaveResponse>(URL, axiosConfig);
 

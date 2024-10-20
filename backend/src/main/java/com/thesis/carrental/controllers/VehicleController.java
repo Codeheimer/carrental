@@ -13,6 +13,7 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Arrays;
 
 import static com.thesis.carrental.enums.FileUploadType.VEHICLE_PICTURE;
 
@@ -79,10 +82,10 @@ public class VehicleController {
         return ResponseEntity.ok(vehicleService.filter(vehicleFilter));
     }
 
-    @PostMapping(name = "/save", consumes = {"multipart/form-data"})
+    @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<VehicleSaveResponse> save(
         @RequestPart("vehicle") final Vehicle vehicle,
-        @RequestPart("picture") final MultipartFile picture,
+        @RequestPart("pictures") final MultipartFile[] pictures,
         @RequestHeader("Authorization") String authorizationHeader
     ) {
         try {
@@ -90,7 +93,8 @@ public class VehicleController {
             final Long id = participantService.findParticipantByLogin(user).getId();
             vehicleService.save(vehicle, id);
             if (vehicle.getId() > 0) {
-                fileUploadService.saveFile(vehicle.getId(), picture, VEHICLE_PICTURE, VEHICLE_UPLOAD_PATH);
+                Arrays.stream(pictures)
+                    .forEach(file -> fileUploadService.saveFile(vehicle.getId(), file, VEHICLE_PICTURE, VEHICLE_UPLOAD_PATH));
             }
 
             return ResponseEntity.ok(new VehicleSaveResponse("Vehicle saved successfully", true));

@@ -1,7 +1,12 @@
 package com.thesis.carrental.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Vehicle extends PersistentEntity {
@@ -35,7 +40,9 @@ public class Vehicle extends PersistentEntity {
     @Column(name="daily_price")
     private double price;
 
-    private String picture;
+    @Transient
+    @JsonIgnore
+    private List<String> images = new ArrayList<>();
 
     public String getMake() {
         return make;
@@ -141,11 +148,11 @@ public class Vehicle extends PersistentEntity {
         this.price = price;
     }
 
-    public String getPicture() {
-        return picture;
+    public List<String> getImages() {
+        return images;
     }
 
-    public void setPicture(final String picture) {
-        this.picture = picture;
+    public void setImages(final List<String> images) {
+        this.images = images;
     }
 }

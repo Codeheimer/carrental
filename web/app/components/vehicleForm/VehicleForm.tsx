@@ -6,14 +6,14 @@ import Textbox, { createTextboxDetails } from "../fields/textbox";
 import GenericButton, { createButtonDetails } from "../fields/genericButton";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 import { useRouter } from "next/navigation";
-import  TextArea, { createTextareaDetails } from "../fields/textarea";
-import { useState } from "react";
+import TextArea, { createTextareaDetails } from "../fields/textarea";
+import { ChangeEvent, useState } from "react";
 import FileUpload, { FileuploadDetails } from "../fields/fileUpload";
 import "./input-style.css";
 
 export default function AddNewVehicle() {
     const { vehicleService, authenticationService } = useGlobalServiceStore();
-    const [images, setImages] = useState<File[]>([])
+    const [images, setImages] = useState<FileList | null>(null)
     const router = useRouter();
 
     const save = (event: React.FormEvent): void => {
@@ -21,11 +21,24 @@ export default function AddNewVehicle() {
         const formData = new FormData(event.target as HTMLFormElement);
         const jsonData: { [key: string]: any } = {};
 
+
+        if (images === null || images.length === 0) {
+            alert("Please upload an image.");
+            return;
+        }
+
         formData.forEach((value, key) => {
             jsonData[key] = value;
         });
 
-        vehicleService.save(jsonData as Vehicle, authenticationService.getToken()).then((response) => {
+        const data = new FormData();
+        data.append('vehicle', new Blob([JSON.stringify(jsonData)], { type: 'application/json' }));
+
+        Array.from(images).forEach((file, index) => {
+            data.append(`pictures`, file);
+        });
+
+        vehicleService.save(data, authenticationService.getToken()).then((response) => {
             if (response.success) {
                 router.push("/")
             } else {
@@ -34,9 +47,12 @@ export default function AddNewVehicle() {
         });
     };
 
-    const handleVehicleImageUpload = () => {
+    const handleVehicleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setImages(e.target.files);
+        }
+    };
 
-    }
     const vehicleImageFileupload = new FileuploadDetails("Upload Images", "images", false, false, true, handleVehicleImageUpload, 'vehicle-images-upload');
 
     return (
@@ -47,11 +63,11 @@ export default function AddNewVehicle() {
                         <h1 className="text-2xl font-bold text-center">Vehicle Details</h1>
                     </div>
                     <div className="flex flex-row justify-between items-stretch w-full">
-                        <div className="h-full w-1/2 items-center justify-center">
-                            <FileUpload {...vehicleImageFileupload} />
+                        <div className="m-2 p-2 flex flex-col h-full w-1/2 items-start">
+                            <div className="m-2 p-2"><Textbox {...createTextboxDetails("Price","price",true)}/></div>
+                            <div className="m-2 p-2"><FileUpload {...vehicleImageFileupload} /></div>
                         </div>
                         <div className="h-full w-1/2">
-
                             <Textbox {...createTextboxDetails("Plate Number", "plateNumber", true)} />
                             <Textbox {...createTextboxDetails("Make", "make", true)} />
                             <Textbox {...createTextboxDetails("Model", "model", true)} />

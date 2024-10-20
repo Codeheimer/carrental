@@ -2,6 +2,7 @@
 
 import useAuthStore from '@/app/stores/authStore';
 import useGlobalServiceStore from '@/app/stores/globalServiceStore';
+import { createObjectURL } from '@/app/utilities/imageUtils';
 import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 
@@ -28,7 +29,7 @@ export default function ImageModal(prop: ImageModalProperties) {
                 setError(null);
 
                 const response = await resourceService.fetchImage(session.token, encodeURI(prop.imageURL));
-                const url = URL.createObjectURL(new Blob([response], { type: "image/jpeg" }));
+                const url = createObjectURL({ resource: response, type: "image/jpeg" });
                 setImageUrl(url);
                 setLoading(false);
 
@@ -45,12 +46,11 @@ export default function ImageModal(prop: ImageModalProperties) {
     }, [prop.open, prop.imageURL]);
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-4 rounded-lg max-w-3xl w-full mx-4">
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-background border border-gray-200 p-4 rounded-lg max-w-3xl w-full mx-4">
                 <div className="flex justify-end">
                     <button
                         onClick={prop.handleClose}
-                        className="text-gray-500 hover:text-gray-700"
                     >
                         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
