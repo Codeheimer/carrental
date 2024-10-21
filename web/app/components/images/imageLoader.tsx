@@ -2,10 +2,11 @@ import useAuthStore from "@/app/stores/authStore";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 import { createObjectURL } from "@/app/utilities/imageUtils";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { ChangeEvent, MouseEventHandler, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
-export default function ImageLoader({ src, alt, className, objectFit = "cover", layout = "fill", ratio1to1 = false }: { src: string, alt: string, className: string, objectFit?: string, layout?: string, ratio1to1?: boolean }) {
+export default function ImageLoader({ src, alt, className, objectFit = "cover", layout = "fill", ratio1to1 = false, onClickAction = () => { } }:
+    { src: string, alt: string, className: string, objectFit?: string, layout?: string, ratio1to1?: boolean, onClickAction?: React.MouseEventHandler<HTMLImageElement> }) {
     const { resourceService } = useGlobalServiceStore();
     const { session } = useAuthStore();
     const [ref, inView] = useInView({ triggerOnce: true });
@@ -20,9 +21,10 @@ export default function ImageLoader({ src, alt, className, objectFit = "cover", 
     }, [inView, src]);
 
     return (
-        <div ref={ref} className={`${className} relative overflow-hidden`} style={{ aspectRatio: ratio1to1 ? '1 / 1' : 'auto' }} >
+        <div ref={ref} className={`${className} relative overflow-hidden`} style={{ aspectRatio: (ratio1to1 ? '1 / 1' : 'auto'), minHeight: '100px', minWidth: '100px' }} >
             {imageSrc && (
                 <Image
+                    onClick={onClickAction}
                     src={imageSrc}
                     alt={alt}
                     layout={layout}

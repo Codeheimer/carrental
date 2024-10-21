@@ -68,7 +68,7 @@ export default function VehicleFilterModule() {
                                 </CardDescription>
                                 <CardFooter className="row-span-1 flex flex-row text-sm font-light justify-between m-1 p-0">
                                     <div>
-                                        <span className="font-bold text-xl text-teal-600 dark:text-teal-400">${card.price}<span className="text-sm font-normal">/day</span></span>
+                                        <span className="font-bold text-xl text-red-600 dark:text-red-400">${card.price}<span className="text-sm font-normal">/day</span></span>
                                     </div>
                                     <div>{beautifyVehicleAge(card.age)}</div>
                                 </CardFooter>

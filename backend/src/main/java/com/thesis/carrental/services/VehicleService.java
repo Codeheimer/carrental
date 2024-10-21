@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.thesis.carrental.enums.FileUploadType.VEHICLE_PICTURE;
+import static com.thesis.carrental.enums.FileUploadType.*;
 
 @Service
 public class VehicleService {
@@ -100,6 +100,11 @@ public class VehicleService {
 
     private VehicleResult toResult(final Vehicle vehicle, final List<FileUpload> pictures) {
         final Participant owner = participantService.findById(vehicle.getOwner());
+        final List<FileUpload> fileUploads =
+            fileUploadService.fetchByOwnerIds(
+                List.of(owner.getId()),
+                List.of(PROFILE_PICTURE)
+            );
         return new VehicleResult(
             vehicle.getId(),
             vehicle.getMake(),
@@ -115,6 +120,7 @@ public class VehicleService {
             DisplayUtil.generateVehicleListingAge(vehicle.getCreationDate()),
             vehicle.getStatus(),
             vehicle.getPrice(),
+            fileUploads.stream().map(FileUpload::getPath).findFirst().orElse(""),
             pictures.stream().map(FileUpload::getPath).limit(1).collect(Collectors.toList())
         );
     }

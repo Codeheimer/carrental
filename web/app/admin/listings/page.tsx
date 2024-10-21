@@ -5,6 +5,7 @@ import AuthenticatedPage from "@/app/components/security/authenticatedPage";
 import { VehicleFilter } from "@/app/services/vehicleService";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 import useVehicleFilteringStore, { VehicleResult } from "@/app/stores/vehicleFilteringStore";
+import { beautifyVehicleAge } from "@/app/utilities/stringUtils";
 import { useEffect, useState } from "react";
 
 export default function ListingsPanel() {
@@ -23,13 +24,14 @@ export default function ListingsPanel() {
             }
         };
         fetchMyListings();
-    }, [setListings])
+    }, [])
 
     const handleStatusChange = (newStatus: string, vehicleId: number): void => {
         vehicleService.updateStatus(newStatus, vehicleId).then(response => {
             console.log(`RESPONSE ${response}`)
             if (response.success) {
-                setListings([])
+                const updatedListings = listings.map(v => v.id === vehicleId ? { ...v, status: newStatus } : v);
+                setListings(updatedListings);
             } else {
                 alert(response.message);
             }
@@ -38,7 +40,7 @@ export default function ListingsPanel() {
     }
 
     const createTableHeader = (id: number, label: string): React.ReactElement => {
-        return (<th key={id} className=" min-w-[200px] cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+        return (<th key={id} className=" min-w-[200px] cursor-pointer border-y p-4">
             {label}
         </th>);
     }
@@ -67,32 +69,20 @@ export default function ListingsPanel() {
 
     const createTableRow = (result: VehicleResult, id: number): React.ReactElement => {
         return (<tr key={id}>
-            <td className="p-4 border-b border-blue-gray-50">
-                <div className="flex items-center gap-3">
-                    <div className="flex flex-col">
-                        <p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">{result.age}</p>
-                    </div>
-                </div>
+            <td className="p-4 w-[5%]">
+                <p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">{beautifyVehicleAge(result.age)}</p>
             </td>
-            <td className="p-4">
-                <div className="flex items-center gap-3">
-                    <div className="flex flex-col">
-                        <p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">{result.title}</p>
-                    </div>
-                </div>
+            <td className="p-4 w-[35%]">
+                <p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">{result.title}</p>
             </td>
-            <td className="p-4">
-                <div className="flex flex-col">
-                    <p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">{result.description}</p>
-                </div>
+            <td className="p-4 w-[35%]">
+                <p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">{result.description}</p>
             </td>
-            <td className="p-4">
-                <div className="w-max">
-                    {createStatus(result.status)}
-                </div>
+            <td className="p-4 w-[5%]">
+                {createStatus(result.status)}
             </td>
-            <td className="p-4">
-                <div className="flex flex-col">
+            <td className="p-4 w-[20%]">
+                <div className="flex flex-row">
                     {statuses.filter(item => item !== result.status).map((status, id) =>
                         <GenericButton key={id} {...createButtonDetails(status, "button", () => handleStatusChange(status, result.id))} />
                     )}
@@ -103,8 +93,8 @@ export default function ListingsPanel() {
 
     return (
         <AuthenticatedPage>
-            <div className="flex justify-center items-center p-4 m-4 overflow- h-full px-0">
-                <table className="mt-4 w-full h-full min-w-max table-auto text-left bg-gray-200">
+            <div className="bg-background text-foreground flex justify-center items-center p-4 m-4 overflow- h-full px-0">
+                <table className="mt-4 w-full h-full table-auto text-left">
                     <thead>
                         <tr>
                             {headers.map((head, key) => createTableHeader(key, head))}

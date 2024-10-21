@@ -11,6 +11,7 @@ export interface User {
     name: string,
     uploadedId: string,
     uploadedBusinessPermit: string,
+    profilePicture : string,
     status: string
 }
 

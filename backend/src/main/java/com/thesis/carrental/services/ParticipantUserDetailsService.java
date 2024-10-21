@@ -35,6 +35,9 @@ public class ParticipantUserDetailsService implements UserDetailsService {
     @Value("${fileupload.participants.dir}")
     private String participantUploads;
 
+    @Value("${fileupload.profile.pictures.dir}")
+    private String profileDir;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Participant> participant = participantRepository.findByLogin(username);
@@ -46,7 +49,8 @@ public class ParticipantUserDetailsService implements UserDetailsService {
     public RegistrationResponse addUser(
         final RegistrationRequest registrationRequest,
         final MultipartFile identification,
-        final MultipartFile businessPermit
+        final MultipartFile businessPermit,
+        final MultipartFile profilePicture
     ) {
 
         final RegistrationResponse validation = validateRequest(registrationRequest);
@@ -77,6 +81,7 @@ public class ParticipantUserDetailsService implements UserDetailsService {
 
         final long id = participant.getId();
         if (id > 0) {
+            fileUploadService.saveFile(id,profilePicture,PROFILE_PICTURE,profileDir);
             final StringBuilder errorMessage = new StringBuilder();
             final boolean identificationUploadSuccess = fileUploadService.saveFile(id,
                 identification,

@@ -19,6 +19,7 @@ export default function RegistrationPage() {
 
     const [identification, setIdentification] = useState<File | null>(null);
     const [businessPermit, setBusinessPermit] = useState<File | null>(null);
+    const [profilePicture, setProfilePicture] = useState<File | null>(null);
 
     const [showBusinessPermitUpload, setShowBusinessPermitUpload] = useState<boolean>(false);
 
@@ -63,6 +64,10 @@ export default function RegistrationPage() {
             data.append('businessPermit', businessPermit);
         }
 
+        if (profilePicture) {
+            data.append('profilePicture', profilePicture);
+        }
+
         registrationService.register(data).then((response) => {
             alert(response.message);
             if (response.success) {
@@ -88,6 +93,13 @@ export default function RegistrationPage() {
             setBusinessPermit(e.target.files[0]);
         }
     };
+
+    const handleProfilePictureUpload = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            console.log("GETTING FILE", e.target.files[0])
+            setProfilePicture(e.target.files[0]);
+        }
+    }
 
     const toggleBusinessPermit = (checked: boolean): void => {
         setShowBusinessPermitUpload(!checked);
@@ -158,6 +170,8 @@ export default function RegistrationPage() {
 
     const businessPermitUpload: FileuploadDetails = new FileuploadDetails("Upload Business Permit", "businessPermit", true, false, false, handleBusinessPermitUpload);
 
+    const profileUpload: FileuploadDetails = new FileuploadDetails("Profile Picture", "profilePicture", true, false, false, handleProfilePictureUpload);
+
     const checkboxBusinessPermit: CheckboxDetails = {
         isRequired: false,
         isHidden: false,
@@ -189,6 +203,8 @@ export default function RegistrationPage() {
                 <FileUpload {...identificationUpload} />
                 <Checkbox {...checkboxBusinessPermit} />
                 {showBusinessPermitUpload && <FileUpload {...businessPermitUpload} />}
+
+                <FileUpload {...profileUpload} />
                 <div>
                     <GenericButton {...registerButton} />
                 </div>

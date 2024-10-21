@@ -117,7 +117,7 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
     }
 
     const handleClickRenter = () => {
-        router.push(`/user/profile/${session.userId}`);
+        router.push(`/user/profile/${listing.ownerId}`);
     }
 
     return (
@@ -129,7 +129,7 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
                 <div className="flex flex-col m-6 xl:w-1/2 xl:h-fit items-end">
                     <div className="py-4">
                         <div className="py-8 px-8 max-w-sm mx-auto bg-background border border-solid border-transparent dark:border-gray-600 rounded-xl shadow-lg space-y-2 sm:py-4 sm:flex sm:items-center sm:space-y-0 sm:space-x-6">
-                            <Image onClick={handleClickRenter} className="hover:cursor-pointer block mx-auto rounded-full sm:mx-0 sm:shrink-0" width={`96`} height={'96'} src="https://tailwindcss.com/img/erin-lindford.jpg" alt="Woman's Face" />
+                            <ImageLoader onClickAction={handleClickRenter} src={listing.ownerProfile} alt="profile picture" className={`hover:cursor-pointer block mx-auto rounded-full sm:mx-0 sm:shrink-0`} />
                             <div className="text-center space-y-2 sm:text-left">
                                 <div className="space-y-0.5">
                                     <p className="text-lg font-semibold">
@@ -148,7 +148,7 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
                                 </h1>
                             </div>
                             <div className="py-5">
-                                <span className="font-bold text-xl text-teal-600 dark:text-teal-400">${listing.price}<span className="text-sm font-normal">/day</span></span>
+                                <span className="font-bold text-xl text-red-600 dark:text-red-400">${listing.price}<span className="text-sm font-normal">/day</span></span>
                             </div>
                         </div>
                         <div className="text-base lg:leading-tight leading-normal text-gray-600 dark:text-gray-300 mt-2 overflow-hidden">

@@ -17,6 +17,8 @@ public record VehicleResult(
     String age,
     String status,
     Double price,
+
+    String ownerProfile,
     List<String> pictures
 ) {
 }

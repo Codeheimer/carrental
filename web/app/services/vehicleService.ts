@@ -16,7 +16,8 @@ export interface IVehicle {
     title: string,
     ownerId: number,
     price: number,
-    pictures: string[]
+    pictures: string[],
+    ownerProfile: string
 }
 
 export class Vehicle implements IVehicle {
@@ -34,7 +35,8 @@ export class Vehicle implements IVehicle {
         public title: string = "",
         public ownerId: number = 0,
         public price: number = 0.00,
-        public pictures: string[] = []
+        public pictures: string[] = [],
+        public ownerProfile: string = ""
     ) {
 
     }

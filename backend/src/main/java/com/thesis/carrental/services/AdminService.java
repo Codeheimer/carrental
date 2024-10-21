@@ -3,7 +3,6 @@ package com.thesis.carrental.services;
 import com.thesis.carrental.dtos.UserResponse;
 import com.thesis.carrental.entities.FileUpload;
 import com.thesis.carrental.entities.Participant;
-import com.thesis.carrental.enums.FileUploadType;
 import com.thesis.carrental.enums.ParticipantStatus;
 import com.thesis.carrental.repositories.ParticipantRepository;
 import org.slf4j.Logger;
@@ -46,7 +45,7 @@ public class AdminService {
         final List<FileUpload> fileUploads =
             fileUploadService.fetchByOwnerIds(
                 participantIds,
-                List.of(IDENTIFICATION, BUSINESS_PERMIT)
+                List.of(IDENTIFICATION, BUSINESS_PERMIT, PROFILE_PICTURE)
             );
 
         final Map<Long, List<FileUpload>> uploadsByParticipantId = fileUploads.stream()
@@ -84,12 +83,18 @@ public class AdminService {
             .filter(fileUpload -> fileUpload.getPath().contains(
                 BUSINESS_PERMIT.toString()))
             .findFirst().map(FileUpload::getPath).orElse(null);
+
+        final String profilePicture = uploads.stream()
+            .filter(fileUpload -> fileUpload.getPath().contains(
+                PROFILE_PICTURE.toString()))
+            .findFirst().map(FileUpload::getPath).orElse(null);
         return new UserResponse(
             participant.getId(),
             participant.getDisplayName(),
             participant.getStatus(),
             identification,
-            businessPermit
+            businessPermit,
+            profilePicture
         );
     }
 }

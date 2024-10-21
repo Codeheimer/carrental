@@ -19,7 +19,7 @@ export default function VehiclePreviewCard(listing: VehicleResult) {
             <div className="text-xl font-bold overflow-hidden text-ellipsis line-clamp-2">
                 {listing.title}
             </div>
-            <div><span className="font-bold  text-red-600">${listing.price}</span></div>
+            <div><span className="font-bold  text-red-600 dark:text-red-400">${listing.price}</span></div>
         </div>
     </div>)
 }
