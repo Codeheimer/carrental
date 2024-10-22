@@ -8,6 +8,7 @@ import com.thesis.carrental.enums.ParticipantStatus;
 import com.thesis.carrental.repositories.ParticipantRepository;
 import com.thesis.carrental.security.ParticipantUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,6 +32,12 @@ public class ParticipantUserDetailsService implements UserDetailsService {
     @Autowired
     private FileUploadService fileUploadService;
 
+    @Value("${fileupload.participants.dir}")
+    private String participantUploads;
+
+    @Value("${fileupload.profile.pictures.dir}")
+    private String profileDir;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Participant> participant = participantRepository.findByLogin(username);
@@ -42,7 +49,8 @@ public class ParticipantUserDetailsService implements UserDetailsService {
     public RegistrationResponse addUser(
         final RegistrationRequest registrationRequest,
         final MultipartFile identification,
-        final MultipartFile businessPermit
+        final MultipartFile businessPermit,
+        final MultipartFile profilePicture
     ) {
 
         final RegistrationResponse validation = validateRequest(registrationRequest);
@@ -73,10 +81,12 @@ public class ParticipantUserDetailsService implements UserDetailsService {
 
         final long id = participant.getId();
         if (id > 0) {
+            fileUploadService.saveFile(id,profilePicture,PROFILE_PICTURE,profileDir);
             final StringBuilder errorMessage = new StringBuilder();
             final boolean identificationUploadSuccess = fileUploadService.saveFile(id,
                 identification,
-                IDENTIFICATION);
+                IDENTIFICATION,
+                participantUploads);
             if (!identificationUploadSuccess) {
                 errorMessage.append("Participant saved but failed to upload identification ");
             }
@@ -84,7 +94,8 @@ public class ParticipantUserDetailsService implements UserDetailsService {
                 final boolean businessPermitSuccess = fileUploadService.saveFile(
                     id,
                     businessPermit,
-                    BUSINESS_PERMIT
+                    BUSINESS_PERMIT,
+                    participantUploads
                 );
                 if (!businessPermitSuccess) {
                     return new RegistrationResponse(errorMessage.append("and business permit")

@@ -99,7 +99,6 @@ const useChatStore = create<ChatStore>((set, get) => {
             } else {
                 const newlyCreatedConvoNoId: number = getConversationNoIdThatContainsParticipants(conversations, session.userId as string, message.recipientId, message.senderId);
                 if (newlyCreatedConvoNoId > -1) {
-                    console.log("THIS IS A NEW CONVO BUT YOU INITIATED IT")
                     let existingConversation = conversations[newlyCreatedConvoNoId];
                     existingConversation = {
                         ...existingConversation,
@@ -116,7 +115,6 @@ const useChatStore = create<ChatStore>((set, get) => {
                 } else {
                     // If conversation is not in the list, create a new one
                     let newConversation = message.conversation;
-                    console.log("THIS IS NEW CONVO", newConversation);
                     if (newConversation) {
                         newConversation = {
                             ...newConversation,
@@ -129,7 +127,6 @@ const useChatStore = create<ChatStore>((set, get) => {
                     }
                 }
             }
-            console.log("ALL CONVOS NOW ", JSON.stringify(updatedConversations))
             // Update the conversations state
             set({ conversations: updatedConversations });
 
@@ -142,20 +139,17 @@ const useChatStore = create<ChatStore>((set, get) => {
     }
 
     const processWSResponse = (message: ChatMessage) => {
-        console.log("RECEIVED WS_RESPONSE ", JSON.stringify(message));
         const { session } = useAuthStore.getState();
         const { conversations, currentConversation } = get();
         const convoIndex: number = getConversationNoIdThatContainsParticipants(conversations, session.userId as string, message.recipientId, message.senderId);
         const initiatedConvo = conversations[convoIndex];
         if (currentConversation && initiatedConvo.equalsBySender(currentConversation)) {
-            console.log("WS_RESPONSE: Updating current convo");
             const updatedCurrentConversation: ConversationImpl = {
                 ...currentConversation,
                 conversationId: message.conversationId as string
             };
             set({ currentConversation: updatedCurrentConversation });
         }
-        console.log("WS_RESPONSE: Updating convo list");
         const updatedConversations: ConversationImpl[] = conversations.map((c, idx) => {
             if (convoIndex === idx) {
                 return {
@@ -218,12 +212,11 @@ const useChatStore = create<ChatStore>((set, get) => {
         setConversations: (conversations: ConversationImpl[]) => {
             set({ conversations: conversations })
             const notificationCout = conversations.filter((conversation) => conversation.unread).length;
-            console.log(`current count ${notificationCout}`)
+            //.log(`current count ${notificationCout}`)
             //lastly upate the chat bubble notification count
             set({ notificationCount: notificationCout })
         },
         onReceiveMessage: (message: ChatMessage) => {
-            console.log("MESSAGE TYPE ",message.type);
             switch (message.type) {
                 case "CHAT":
                     processMessage(message);

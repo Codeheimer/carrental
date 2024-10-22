@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "./components/header";
 import ChatModule from "./components/chatModule/chatModule";
 import ClientAuthenticationInitializer from "./components/security/clientAuthenticationInitializer";
+import { ThemeProvider } from "./components/themeProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,12 +18,23 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
   return (
     <html lang="en">
       <body className={inter.className}>
-        <main className="flex flex-col">
-          <ClientAuthenticationInitializer />
-          <Header />
-          {children}
-          <ChatModule />
-        </main>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange>
+          <main>
+            <div className="relative min-h-screen">
+              <div className="flex flex-col relative z-10 min-h-screen">
+                <ClientAuthenticationInitializer />
+                <Header />
+                {children}
+                <ChatModule />
+              </div>
+            </div>
+          </main>
+        </ThemeProvider>
+
       </body>
     </html>
   );

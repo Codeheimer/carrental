@@ -1,6 +1,7 @@
 'use client';
 
 import GenericButton, { createButtonDetails } from "@/app/components/fields/genericButton";
+import ImageLoader from "@/app/components/images/imageLoader";
 import ImageModal, { defaultImageModalProperties, ImageModalProperties } from "@/app/components/popups/imageModal";
 import AuthenticatedPage from "@/app/components/security/authenticatedPage";
 import { User } from "@/app/services/adminService";
@@ -63,6 +64,7 @@ export default function Accounts() {
             <table className="h-full w-full text-center">
                 <thead>
                     <tr>
+                        <th className="w-1/12"></th>
                         <th className="w-1/4">Name</th>
                         <th className="w-1/4">Attachments</th>
                         <th className="w-1/4">Status</th>
@@ -72,6 +74,11 @@ export default function Accounts() {
                 <tbody>
                     {users.map((user) => (
                         <tr className="h-20" key={user.id}>
+                            <td>
+                                <div className="w-24 h-24 rounded-xl">
+                                    {<ImageLoader layout={'fill'} objectFit={'contain'} src={user.profilePicture} alt={`picture`} className={`"flex flex-col m-6 xl:w-1/2 w-full rounded-xl shadow-lg overflow-hidden`} />}
+                                </div>
+                            </td>
                             <td>{user.name}</td>
                             <td>
                                 <GenericButton {...createButtonDetails("ID", "button", () => handleShowImage(user.uploadedId))} />

@@ -3,7 +3,7 @@ import VehicleFilterModule from "./components/vehicleFilterModule/vehicleFilterM
 
 export default function Home() {
   return (
-    <div className="flex">
+    <div className="calc(var(--vh) * 100)">
       <VehicleFilterModule />
     </div>
   );

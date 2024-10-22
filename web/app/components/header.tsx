@@ -2,9 +2,11 @@
 
 import useGlobalServiceStore from "../stores/globalServiceStore";
 import HeaderLink from "./header/headerLink";
-import GenericButton, { ButtonDetails } from "./fields/genericButton";
+import GenericButton, { ButtonDetails, createButtonDetails } from "./fields/genericButton";
 import { useRouter } from "next/navigation";
 import useAuthStore from "../stores/authStore";
+import Link from "next/link";
+import { ThemeToggle } from "./themeToggle";
 
 export default function Header() {
     const { authenticationService } = useGlobalServiceStore();
@@ -25,8 +27,12 @@ export default function Header() {
         onClickAction: handleLogout
     }
 
+    const handleLogin = (): void => {
+        router.push('/login');
+    }
+
     return (
-        <nav className="z-50 bg-white sticky top-0 shadow-md flex items-center justify-between px-8 py-02">
+        <nav className="bg-background border-b border-solid border-transparent dark:border-gray-600 z-50 sticky top-0 shadow-md flex items-center justify-between px-8 py-02">
             <nav className="nav font-semibold text-lg">
                 <ul className="flex items-center">
                     {session.headerLinks.map((link, key) =>
@@ -42,7 +48,10 @@ export default function Header() {
                     Welcome, {session.displayName}
                 </div>}
                 <div>
-                    {session.loggedIn ? <form><GenericButton {...logout} /></form> : <HeaderLink label={'Login'} path={'/login'} />}
+                    {session.loggedIn ? <form><GenericButton {...logout} /></form> : <GenericButton {...createButtonDetails('Login', "button", handleLogin)} />}
+                </div>
+                <div>
+                    <ThemeToggle />
                 </div>
             </div>
         </nav>)

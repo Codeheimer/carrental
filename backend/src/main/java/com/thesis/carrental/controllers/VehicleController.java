@@ -5,12 +5,15 @@ import com.thesis.carrental.dtos.VehicleUpdateRequest;
 import com.thesis.carrental.dtos.VehicleUpdateResponse;
 import com.thesis.carrental.entities.Vehicle;
 import com.thesis.carrental.filters.VehicleFilter;
+import com.thesis.carrental.services.FileUploadService;
 import com.thesis.carrental.services.JWTService;
 import com.thesis.carrental.services.ParticipantService;
 import com.thesis.carrental.services.VehicleService;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +22,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Arrays;
+
+import static com.thesis.carrental.enums.FileUploadType.VEHICLE_PICTURE;
 
 @RestController
 @RequestMapping("/api/vehicle")
@@ -30,15 +39,22 @@ public class VehicleController {
     private final JWTService jwtService;
 
     private final ParticipantService participantService;
+    private final FileUploadService fileUploadService;
+    private final String VEHICLE_UPLOAD_PATH;
 
     @Autowired
     public VehicleController(
-        final VehicleService vehicleService, JWTService jwtService,
-        ParticipantService participantService
+        final VehicleService vehicleService,
+        final JWTService jwtService,
+        final ParticipantService participantService,
+        final FileUploadService fileUploadService,
+        @Value("${fileupload.vehicles.dir}") final String path
     ) {
         this.vehicleService = vehicleService;
         this.jwtService = jwtService;
         this.participantService = participantService;
+        this.fileUploadService = fileUploadService;
+        this.VEHICLE_UPLOAD_PATH = path;
     }
 
     @GetMapping("/{id}")
@@ -52,24 +68,34 @@ public class VehicleController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<?> filter(@RequestBody final VehicleFilter vehicleFilter, @RequestHeader(value = "Authorization",required = false) final String token) {
-        if(token != null) {
+    public ResponseEntity<?> filter(
+        @RequestBody final VehicleFilter vehicleFilter,
+        @RequestHeader(value = "Authorization", required = false) final String token
+    ) {
+        if (token != null) {
             final String login = jwtService.extractLogin(token.split(" ")[1]);
-            return ResponseEntity.ok(vehicleService.filter(vehicleFilter,
-                participantService.findParticipantByLogin(login)));
+            return ResponseEntity.ok(vehicleService.filter(
+                vehicleFilter,
+                participantService.findParticipantByLogin(login)
+            ));
         }
         return ResponseEntity.ok(vehicleService.filter(vehicleFilter));
     }
 
-    @PostMapping("/save")
+    @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<VehicleSaveResponse> save(
-        @RequestBody final Vehicle vehicle,
+        @RequestPart("vehicle") final Vehicle vehicle,
+        @RequestPart("pictures") final MultipartFile[] pictures,
         @RequestHeader("Authorization") String authorizationHeader
     ) {
         try {
             final String user = jwtService.extractLogin(authorizationHeader.split(" ")[1]);
             final Long id = participantService.findParticipantByLogin(user).getId();
             vehicleService.save(vehicle, id);
+            if (vehicle.getId() > 0) {
+                Arrays.stream(pictures)
+                    .forEach(file -> fileUploadService.saveFile(vehicle.getId(), file, VEHICLE_PICTURE, VEHICLE_UPLOAD_PATH));
+            }
 
             return ResponseEntity.ok(new VehicleSaveResponse("Vehicle saved successfully", true));
         } catch (Exception e) {

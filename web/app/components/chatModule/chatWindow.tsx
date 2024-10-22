@@ -4,6 +4,7 @@ import Message, { ChatMessage, ChatMessageImpl } from "./components/message";
 import useChatStore, { ChatParticipant, ConversationImpl } from "@/app/stores/chatStore";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 import useAuthStore from "@/app/stores/authStore";
+import GenericButton, { createButtonDetails } from "../fields/genericButton";
 
 export default function ChatWindow() {
     const { currentConversation, setCurrentConversation, setConversations, conversations } = useChatStore();
@@ -82,11 +83,13 @@ export default function ChatWindow() {
     }
 
     return (<div style={{ boxShadow: "0 0 0 #0000, 0 0 0 #0000, 0 1px 2px 0 rgba(0, 0, 0, 0.05)" }}
-        className="fixed bottom-[calc(4rem+1.5rem)] right-0 mr-4 bg-white p-6 rounded-lg border border-[#e5e7eb] w-[440px] h-[620px]">
+        className="bg-background text-foreground fixed bottom-[calc(4rem+1.5rem)] right-0 mr-4 p-6 rounded-lg border w-[440px] h-[620px]">
 
         <div className="flex flex-row justify-start space-y-1.5 rounded-lg">
             <div className="mt-2 mx-1" onClick={exitConvesation}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-arrow-left" width="28" height="28" viewBox="0 0 24 24" strokeWidth="2.5" stroke="#000000" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" className="text-foreground icon icon-tabler icon-tabler-arrow-left" 
+                width="28" height="28" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" fill="none" 
+                strokeLinecap="round" strokeLinejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                     <path d="M5 12l14 0" />
                     <path d="M5 12l6 6" />
@@ -110,9 +113,7 @@ export default function ChatWindow() {
                     className="flex h-10 w-full rounded-md border border-[#e5e7eb] px-3 py-2 text-sm placeholder-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#9ca3af] disabled:cursor-not-allowed disabled:opacity-50 text-[#030712] focus-visible:ring-offset-2"
                     placeholder="Type your message">
                 </input>
-                <button onClick={send}
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium text-[#f9fafb] disabled:pointer-events-none disabled:opacity-50 bg-black hover:bg-[#111827E6] h-10 px-4 py-2">
-                    Send</button>
+                <GenericButton {...createButtonDetails("Send", "button", send)} />
             </form>
         </div>
 

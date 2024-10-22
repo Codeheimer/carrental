@@ -1,20 +1,20 @@
 import { AxiosRequestConfig } from "axios";
-import { RegistrationDetails } from "../register/page";
 import { BaseService } from "./baseService";
 
 interface RegistrationResponse {
-    message: string
+    message: string,
+    success:boolean
 }
 
 export interface RegistrationService {
-    register: (details: RegistrationDetails | FormData, headers?: Record<string, string>) => Promise<string>,
+    register: (details: FormData, headers?: Record<string, string>) => Promise<RegistrationResponse>,
     getHeaders: () => Record<string, string>
 }
 
 export class RegistrationServiceImpl extends BaseService implements RegistrationService {
     private REGISTER = process.env.REGISTER;
 
-    public register = async (details: RegistrationDetails | FormData): Promise<string> => {
+    public register = async (details: FormData): Promise<RegistrationResponse> => {
         const URL = `${this.getBaseURL()}${this.REGISTER}`;
         const axiosConfig: AxiosRequestConfig = {
             method: 'POST',
@@ -24,6 +24,6 @@ export class RegistrationServiceImpl extends BaseService implements Registration
         }
         const response = await this.doRequest<RegistrationResponse>(URL, axiosConfig);
 
-        return response.message;
+        return response;
     }
 }

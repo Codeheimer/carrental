@@ -1,5 +1,7 @@
 package com.thesis.carrental.dtos;
 
+import java.util.List;
+
 public record VehicleResult(
     long id,
     String make,
@@ -13,6 +15,10 @@ public record VehicleResult(
     String ownerId,
     String owner,
     String age,
-    String status
+    String status,
+    Double price,
+
+    String ownerProfile,
+    List<String> pictures
 ) {
 }

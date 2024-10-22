@@ -12,7 +12,6 @@ import com.thesis.carrental.services.ParticipantUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -49,25 +48,14 @@ public class AuthenticationController {
 
     @PostMapping(value = "/addNewUser", consumes = {"multipart/form-data"})
     public ResponseEntity<RegistrationResponse> addNewUser(@RequestPart("registrationData") RegistrationRequest registrationRequest,
+        @RequestPart("profilePicture") final MultipartFile profilePicture,
         @RequestPart("identification") final MultipartFile identification,
         @RequestPart(value = "businessPermit",required = false) final MultipartFile businessPermit) {
         try{
-            return ResponseEntity.ok(participantUserDetailsService.addUser(registrationRequest,identification,businessPermit));
+            return ResponseEntity.ok(participantUserDetailsService.addUser(registrationRequest,identification,businessPermit,profilePicture));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(new RegistrationResponse("Failed to add user, reason: "+e.getMessage(),false));
         }
-    }
-
-    @GetMapping("/user/userProfile")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String userProfile() {
-        return "Welcome to User Profile";
-    }
-
-    @GetMapping("/admin/adminProfile")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public String adminProfile() {
-        return "Welcome to Admin Profile";
     }
 
     @PostMapping("/generateToken")

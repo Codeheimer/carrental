@@ -20,7 +20,11 @@ export const beautifyVehicleAge = (ageStructure: string): string => {
                     age = `${hours} hours ago`
                 }
             } else {
-                age = `${days} days ago`
+                if (Number(days) === 1) {
+                    age = `${days} day ago`
+                } else {
+                    age = `${days} days ago`
+                }
             }
         } else {
             age = `${months} months ago`

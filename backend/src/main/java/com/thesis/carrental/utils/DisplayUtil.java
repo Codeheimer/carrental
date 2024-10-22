@@ -1,10 +1,14 @@
 package com.thesis.carrental.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class DisplayUtil {
 
@@ -29,5 +33,16 @@ public class DisplayUtil {
     private static String structureListingAge(final long hours, final long days, final int months) {
         final String divider = ":";
         return hours + divider + days + divider + months;
+    }
+
+    public static String formatDate(final Instant date){
+        return formatDate(date, null);
+    }
+
+    public static String formatDate(final Instant date, final String format){
+        String formatToUse = StringUtils.defaultIfEmpty(format,"MMM, dd yyyy");
+        ZonedDateTime zonedDateTime = date.atZone(ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatToUse);
+        return zonedDateTime.format(formatter);
     }
 }

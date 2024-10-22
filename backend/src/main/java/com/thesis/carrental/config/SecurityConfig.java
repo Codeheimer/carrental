@@ -44,7 +44,9 @@ public class SecurityConfig {
                     "/auth/generateToken",
                     "/auth/verifyToken",
                     "/api/vehicle/",
-                    "/api/vehicle/{id}").permitAll()
+                    "/api/vehicle/{id}",
+                    "/api/image/***",
+                    "/user/**").permitAll()
                 .requestMatchers("mywebsocket/**").permitAll()
                 .requestMatchers("/auth/user/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")

@@ -75,13 +75,13 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex items-center flex-col border-2 m-6 border-solid border-green-50">
+        <div className="flex items-center flex-col border-1 m-6 border-solid border-gray-600">
             <form onSubmit={attemptLogin}>
                 <div className="flex items-center flex-col m-6">
                     {hasError() && <AlertError {...error} />}
                     <Textbox {...emailField} />
                     <Textbox {...passwordField} />
-                    <div className="my-4">
+                    <div className="my-4 flex flex-row">
                         <GenericButton {...loginButton} />
                         <GenericButton {...registerButton} />
                     </div>
