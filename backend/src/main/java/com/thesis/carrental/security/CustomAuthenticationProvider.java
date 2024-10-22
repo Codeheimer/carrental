@@ -1,6 +1,5 @@
 package com.thesis.carrental.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -30,7 +29,11 @@ public class CustomAuthenticationProvider extends DaoAuthenticationProvider {
         final UserDetails user = userDetailsService.loadUserByUsername(email);
 
         if(!user.isEnabled()){
-            throw new AuthenticationException("Account is still being reviewed.") {};
+            throw new AuthenticationException("Account is still being reviewed.Please contact your Administrator.") {};
+        }
+
+        if(!user.isAccountNonLocked()){
+            throw new AuthenticationException("Error logging in. Please contact your Administrator.") {};
         }
 
         if (email != null && encoder.matches(password,user.getPassword())) {

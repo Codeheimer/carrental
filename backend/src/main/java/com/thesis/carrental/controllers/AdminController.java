@@ -1,5 +1,6 @@
 package com.thesis.carrental.controllers;
 
+import com.thesis.carrental.dtos.ChangePasswordRequest;
 import com.thesis.carrental.dtos.FetchUsersResponse;
 import com.thesis.carrental.dtos.UserUpdateResponse;
 import com.thesis.carrental.enums.ParticipantStatus;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,4 +48,20 @@ public class AdminController extends BaseController {
         adminService.updateParticipantStatus(id,status);
         return ResponseEntity.ok(new UserUpdateResponse("User updated.",true));
     }
+
+    @PutMapping("/user/{id}/toggleDeactivate")
+    public ResponseEntity<UserUpdateResponse> toggleDeactivateUser(
+        @PathVariable("id") final Long id){
+        adminService.toggleDeactivate(id);
+        return ResponseEntity.ok(new UserUpdateResponse("Success",true));
+    }
+
+    @PutMapping("/user/{id}/changePass")
+    public ResponseEntity<UserUpdateResponse> changePassword(
+        @PathVariable("id") final Long id,
+        @RequestBody final ChangePasswordRequest request){
+        adminService.changePassword(id, request.newPassword());
+        return ResponseEntity.ok(new UserUpdateResponse("Success",true));
+    }
+
 }

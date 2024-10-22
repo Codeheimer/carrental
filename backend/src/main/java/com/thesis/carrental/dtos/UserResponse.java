@@ -1,11 +1,14 @@
 package com.thesis.carrental.dtos;
 
+import com.thesis.carrental.enums.ParticipantStatus;
+
 public record UserResponse(
     long id,
     String name,
-    String status,
+    ParticipantStatus status,
     String uploadedId,
     String uploadedBusinessPermit,
-    String profilePicture
+    String profilePicture,
+    boolean deactivated
 ) {
 }

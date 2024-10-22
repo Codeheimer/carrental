@@ -1,19 +1,22 @@
 'use client';
 
 import GenericButton, { createButtonDetails } from "@/app/components/fields/genericButton";
+import Textbox, { createTextboxDetails } from "@/app/components/fields/textbox";
 import ImageLoader from "@/app/components/images/imageLoader";
+import GenericModal, { initialModal, ModalProp } from "@/app/components/popups/genericModal";
 import ImageModal, { defaultImageModalProperties, ImageModalProperties } from "@/app/components/popups/imageModal";
 import AuthenticatedPage from "@/app/components/security/authenticatedPage";
 import { User } from "@/app/services/adminService";
 import useAuthStore from "@/app/stores/authStore";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 export default function Accounts() {
     const [users, setUsers] = useState<User[]>([]);
     const { adminService } = useGlobalServiceStore();
     const { session } = useAuthStore();
     const [imageModal, setImageModal] = useState<ImageModalProperties>(defaultImageModalProperties);
+    const [modal, setModal] = useState<ModalProp>(initialModal)
 
 
     useEffect(() => {
@@ -58,6 +61,47 @@ export default function Accounts() {
         setImageModal(defaultImageModalProperties);
     }
 
+    const handleToggleDeactivate = (id: string) => {
+        if (session.token) {
+            adminService.toggleDeactivate(session.token, id);
+        }
+
+        setUsers(users.map(reg =>
+            reg.id === id ? { ...reg, deactivated: !reg.deactivated } : reg
+        ));
+    }
+
+    const handleChangePasswordModal = (id: string) => {
+        const newModal: ModalProp = {
+            onClose: () => { setModal({ ...modal, isOpen: false }) },
+            isOpen: true,
+            children: changePasswordModal(id),
+        };
+        setModal(newModal);
+    }
+
+    const handleChangePasswordSubmit = (event: React.FormEvent, id: string) => {
+        if (session.token) {
+            event.preventDefault();
+            const formData = new FormData(event.target as HTMLFormElement);
+            const jsonData: { [key: string]: any } = {};
+            formData.forEach((value, key) => {
+                jsonData[key] = value;
+            });
+
+            adminService.changePassword(session.token, id, jsonData.changePassword)
+        }
+    }
+
+    const changePasswordModal = (id: string): ReactNode => {
+        return (<form onSubmit={(e) => handleChangePasswordSubmit(e, id)}>
+            <div className="flex flex-col p-2 m-2">
+                <Textbox {...createTextboxDetails("New Password", "changePassword", true, false)} />
+                <GenericButton {...createButtonDetails("Submit", "submit")} />
+            </div>
+        </form>)
+    }
+
     return (<AuthenticatedPage>
         <div className="flex flex-col w-full h-full justify-center items-center container mx-auto p-6">
             <h1 className="text-2xl font-bold mb-6">Accounts Dashboard</h1>
@@ -99,6 +143,12 @@ export default function Accounts() {
                                         <GenericButton {...createButtonDetails("Reject", "button", () => handleReject(user.id))} />
                                     </div>
                                 )}
+                                {user.status !== 'PENDING' && (
+                                    <div className="flex justify-center items-center space-x-2">
+                                        <GenericButton {...createButtonDetails(user.deactivated ? 'Activate' : 'Deactivate', "button", () => handleToggleDeactivate(user.id))} />
+                                        <GenericButton {...createButtonDetails('Change Password', "button", () => handleChangePasswordModal(user.id))} />
+                                    </div>
+                                )}
                             </td>
                         </tr>
                     ))}
@@ -107,5 +157,6 @@ export default function Accounts() {
         </div>
 
         {imageModal.open && <ImageModal {...imageModal} />}
+        {modal.isOpen && <GenericModal {...modal} />}
     </AuthenticatedPage>)
 }

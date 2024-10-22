@@ -16,11 +16,14 @@ public class ParticipantUserDetails implements UserDetails {
     private final String password;
 
     private final boolean approved;
+
+    private final boolean isDeactivated;
     private final List<GrantedAuthority> authorities;
 
     public ParticipantUserDetails(final Participant participant){
         this.username = participant.getEmail();
         this.password = participant.getPassword();
+        this.isDeactivated = participant.isDeactived();
         this.approved = participant.isApproved();
         this.authorities = Stream.of(participant.getRoles().split(","))
             .map(SimpleGrantedAuthority::new)
@@ -50,7 +53,7 @@ public class ParticipantUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return !this.isDeactivated;
     }
 
     @Override
