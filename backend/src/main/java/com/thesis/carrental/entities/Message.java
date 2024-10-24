@@ -19,7 +19,6 @@ public class Message extends PersistentEntity {
     @JoinColumn(name = "sender_id")
     private Participant sender;
 
-    @Column(columnDefinition = "TEXT")
     private String content;
 
     private Message(){}

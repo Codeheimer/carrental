@@ -4,7 +4,6 @@ import com.thesis.carrental.dtos.RegistrationRequest;
 import com.thesis.carrental.dtos.RegistrationResponse;
 import com.thesis.carrental.entities.Participant;
 import com.thesis.carrental.enums.ParticipantRoles;
-import com.thesis.carrental.enums.ParticipantStatus;
 import com.thesis.carrental.repositories.ParticipantRepository;
 import com.thesis.carrental.security.ParticipantUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.thesis.carrental.enums.FileUploadType.*;
+import static com.thesis.carrental.enums.ParticipantStatus.*;
 
 @Service
 public class ParticipantUserDetailsService implements UserDetailsService {
@@ -60,14 +60,14 @@ public class ParticipantUserDetailsService implements UserDetailsService {
 
         final Participant participant = registrationRequest.toParticipant();
         participant.setPassword(encoder.encode(participant.getPassword()));
-        participant.setStatus(ParticipantStatus.PENDING.name());
+        participant.setStatus(PENDING);
 
         final StringBuilder roles = new StringBuilder(ParticipantRoles.ROLE_RENTEE.toString());
 
         if (participant.getEmail().equals("admin@admin.com")) {
             roles.append(",").append(ParticipantRoles.ADMIN);
             participant.setApproved(true);
-            participant.setStatus(ParticipantStatus.APPROVED.name());
+            participant.setStatus(APPROVED);
         }
 
         if (registrationRequest.businessOwner()) {

@@ -3,11 +3,13 @@ package com.thesis.carrental.services;
 import com.thesis.carrental.dtos.UserResponse;
 import com.thesis.carrental.entities.FileUpload;
 import com.thesis.carrental.entities.Participant;
+import com.thesis.carrental.enums.ParticipantRoles;
 import com.thesis.carrental.enums.ParticipantStatus;
 import com.thesis.carrental.repositories.ParticipantRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,17 +29,22 @@ public class AdminService {
 
     private final FileUploadService fileUploadService;
 
+    private final PasswordEncoder encoder;
+
     @Autowired
     public AdminService(
-        ParticipantRepository participantRepository,
-        FileUploadService fileUploadService
+        final ParticipantRepository participantRepository,
+        final FileUploadService fileUploadService,
+        final PasswordEncoder encoder
     ) {
         this.participantRepository = participantRepository;
         this.fileUploadService = fileUploadService;
+        this.encoder = encoder;
     }
 
     public List<UserResponse> fetchUsers() {
         final List<Participant> participants = participantRepository.findAll();
+        participants.removeIf(p -> p.getRolesEnum().contains(ParticipantRoles.ADMIN));
         final List<Long> participantIds = participants.stream()
             .map(Participant::getId)
             .toList();
@@ -63,7 +70,7 @@ public class AdminService {
         final Optional<Participant> p = participantRepository.findById(participantId);
         if (p.isPresent()) {
             final Participant participant = p.get();
-            participant.setStatus(status.name());
+            participant.setStatus(status);
             if (status.equals(ParticipantStatus.APPROVED)) {
                 participant.setApproved(true);
             }
@@ -94,7 +101,20 @@ public class AdminService {
             participant.getStatus(),
             identification,
             businessPermit,
-            profilePicture
+            profilePicture,
+            participant.isDeactived()
         );
+    }
+
+    public void toggleDeactivate(final Long id) {
+        final Participant p = participantRepository.findById(id).orElseThrow();
+        p.setDeactived(!p.isDeactived());
+        participantRepository.save(p);
+    }
+
+    public void changePassword(final Long id, final String s) {
+        final Participant p = participantRepository.findById(id).orElseThrow();
+        p.setPassword(encoder.encode(s));
+        participantRepository.save(p);
     }
 }

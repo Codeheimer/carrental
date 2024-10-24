@@ -1,8 +1,11 @@
 package com.thesis.carrental.entities;
 
 import com.thesis.carrental.enums.ParticipantRoles;
+import com.thesis.carrental.enums.ParticipantStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,7 +43,10 @@ public class Participant extends PersistentEntity {
 
     private boolean approved;
 
-    private String status;
+    private boolean deactived;
+
+    @Enumerated(EnumType.STRING)
+    private ParticipantStatus status;
 
     public String getFirstName() {
         return firstName;
@@ -126,12 +132,20 @@ public class Participant extends PersistentEntity {
         this.approved = approved;
     }
 
-    public String getStatus() {
+    public ParticipantStatus getStatus() {
         return status;
     }
 
-    public void setStatus(final String status) {
+    public void setStatus(final ParticipantStatus status) {
         this.status = status;
+    }
+
+    public boolean isDeactived() {
+        return deactived;
+    }
+
+    public void setDeactived(final boolean deactived) {
+        this.deactived = deactived;
     }
 
     public List<ParticipantRoles> getRolesEnum(){
