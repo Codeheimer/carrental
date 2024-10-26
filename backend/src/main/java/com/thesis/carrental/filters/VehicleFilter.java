@@ -1,6 +1,7 @@
 package com.thesis.carrental.filters;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.thesis.carrental.dtos.Coordinate;
 import com.thesis.carrental.dtos.VehicleResult;
 import org.springframework.data.domain.Pageable;
 
@@ -22,7 +23,11 @@ public class VehicleFilter extends AbstractFilter {
     private int seater;
     private boolean own;
 
+    private int maxKm;
+
     private List<VehicleResult> result = new ArrayList<>();
+
+    private Coordinate userLocation;
 
     public VehicleFilter() {
     }
@@ -34,6 +39,7 @@ public class VehicleFilter extends AbstractFilter {
         final String year,
         final String engineDisplacement,
         final int seater,
+        final int maxKm,
         final boolean own,
         final int pageNumber,
         final int pageSize
@@ -44,6 +50,7 @@ public class VehicleFilter extends AbstractFilter {
         this.year = year;
         this.engineDisplacement = engineDisplacement;
         this.seater = seater;
+        this.maxKm = maxKm;
         this.own = own;
         this.setPageNumber(pageNumber);
         this.setPageSize(pageSize);
@@ -113,6 +120,22 @@ public class VehicleFilter extends AbstractFilter {
         this.result = result;
     }
 
+    public int getMaxKm() {
+        return maxKm;
+    }
+
+    public void setMaxKm(final int maxKm) {
+        this.maxKm = maxKm;
+    }
+
+    public Coordinate getUserLocation() {
+        return userLocation;
+    }
+
+    public void setUserLocation(final Coordinate userLocation) {
+        this.userLocation = userLocation;
+    }
+
     @Override
     public Pageable next() {
         return new VehicleFilter(
@@ -122,6 +145,7 @@ public class VehicleFilter extends AbstractFilter {
             this.year,
             this.engineDisplacement,
             this.seater,
+            this.maxKm,
             this.own,
             this.getTotalPages() == this.getPageNumber() ? INDEX_START : this.getPageNumber() + 1,
             this.getPageSize()
@@ -137,6 +161,7 @@ public class VehicleFilter extends AbstractFilter {
             this.year,
             this.engineDisplacement,
             this.seater,
+            this.maxKm,
             this.own,
             this.getPageNumber() == INDEX_START ? this.getTotalPages() : this.getPageNumber() - 1,
             this.getPageSize()
@@ -152,6 +177,7 @@ public class VehicleFilter extends AbstractFilter {
             this.year,
             this.engineDisplacement,
             this.seater,
+            this.maxKm,
             this.own,
             INDEX_START,
             this.getPageSize()
@@ -167,6 +193,7 @@ public class VehicleFilter extends AbstractFilter {
             this.year,
             this.engineDisplacement,
             this.seater,
+            this.maxKm,
             this.own,
             pageNumber,
             this.getPageSize()
@@ -176,6 +203,7 @@ public class VehicleFilter extends AbstractFilter {
     @Override
     public boolean isFilterEmpty() {
         return (isEmpty(this.search)) &&
+            (isEmpty(this.make)) &&
             (isEmpty(this.model)) &&
             (isEmpty(this.year)) &&
             (isEmpty(this.engineDisplacement)) &&
