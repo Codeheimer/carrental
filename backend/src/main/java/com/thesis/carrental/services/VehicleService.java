@@ -1,25 +1,27 @@
 package com.thesis.carrental.services;
 
+import com.thesis.carrental.dtos.Coordinate;
 import com.thesis.carrental.dtos.VehicleResult;
 import com.thesis.carrental.dtos.VehicleUpdateRequest;
 import com.thesis.carrental.entities.FileUpload;
 import com.thesis.carrental.entities.Participant;
 import com.thesis.carrental.entities.Vehicle;
-import com.thesis.carrental.enums.FileUploadType;
 import com.thesis.carrental.enums.VehicleStatus;
 import com.thesis.carrental.filters.VehicleFilter;
 import com.thesis.carrental.repositories.VehicleRepository;
 import com.thesis.carrental.utils.DisplayUtil;
+import com.thesis.carrental.utils.DistanceCalculator;
 import jakarta.persistence.NoResultException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -27,6 +29,8 @@ import static com.thesis.carrental.enums.FileUploadType.*;
 
 @Service
 public class VehicleService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(VehicleService.class);
 
     private final VehicleRepository vehicleRepository;
 
@@ -68,6 +72,7 @@ public class VehicleService {
             result = vehicleRepository.findAll(filter);
         } else {
             result = vehicleRepository.filter(
+                filter.getSearch(),
                 filter.getMake(),
                 filter.getModel(),
                 filter.getYear(),
@@ -76,16 +81,37 @@ public class VehicleService {
                 filter
             );
         }
-        final List<Vehicle> results = result.getContent();
+        final List<Vehicle> results = getVehicles(filter, result);
         final List<Long> ids = results.stream().map(Vehicle::getId).toList();
         final Map<Long, List<FileUpload>> uploadsByVehicle = fileUploadService
             .fetchByOwnerIds(ids, List.of(VEHICLE_PICTURE)).stream()
             .collect(Collectors.groupingBy(FileUpload::getOwnerId));
 
-        filter.setResult(toResults(result.getContent(), uploadsByVehicle));
+        filter.setResult(toResults(results, uploadsByVehicle));
         filter.setTotalPages(result.getTotalPages());
         filter.setTotalResult(result.getTotalElements());
         return filter;
+    }
+
+    private static List<Vehicle> getVehicles(
+        final VehicleFilter filter,
+        final Page<Vehicle> result
+    ) {
+        final List<Vehicle> results = new ArrayList<>(result.getContent());
+        final Coordinate coordinate = filter.getUserLocation();
+        results.removeIf(v -> {
+            if(Objects.isNull(coordinate)){
+                return false;
+            }
+            final double distance = DistanceCalculator.calculateDistance(
+                coordinate.latitude(),
+                coordinate.longitude(),
+                v.getLatitude(),
+                v.getLongitude());
+            LOG.info("Vehicle ID: {} , distance: {}",v.getId(),distance);
+            return distance > filter.getMaxKm();
+        });
+        return results;
     }
 
     private List<VehicleResult> toResults(

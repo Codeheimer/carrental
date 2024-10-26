@@ -1,6 +1,7 @@
 import { AxiosRequestConfig } from 'axios';
 import { BaseService } from './baseService';
 import { VehicleResult } from '../stores/vehicleFilteringStore';
+import { Coordinate } from '../components/google/maps/googleMap';
 
 export interface IVehicle {
     plateNumber: string
@@ -61,6 +62,7 @@ export interface IVehicleFilter {
     totalPages?: number;
     totalResult?: number;
     ownerId: number;
+    userLocation?: Coordinate | null
 }
 
 export interface VehicleService {
@@ -85,7 +87,8 @@ export class VehicleFilter implements IVehicleFilter {
         public pageSize: number = 10,
         public totalPages: number = 0,
         public totalResult: number = 0,
-        public ownerId: number = 0
+        public ownerId: number = 0,
+        public userLocation: Coordinate | null = null
     ) { }
 
     static withOwnerId(ownerId: number): VehicleFilter {
