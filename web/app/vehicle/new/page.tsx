@@ -34,8 +34,8 @@ export default function NewVehicle() {
         });
 
         if(location){
-            jsonData["latitude"] = location.lat;
-            jsonData["longitude"] = location.long;
+            jsonData["latitude"] = location.latitude;
+            jsonData["longitude"] = location.longitude;
         }
 
         const data = new FormData();

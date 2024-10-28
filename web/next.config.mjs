@@ -12,7 +12,8 @@ const nextConfig = {
         CHAT_RETRIEVE_CONVERSATIONS: process.env.CHAT_RETRIEVE_CONVERSATIONS,
         FETCH_USERS: process.env.FETCH_USERS,
         ADMIN_DEV_MODE: process.env.ADMIN_DEV_MODE,
-        GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY
+        GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
+        UTIL_ADDRESS_JSON_UPLOAD: process.env.UTIL_ADDRESS_JSON_UPLOAD
     },
     images: {
         remotePatterns: [

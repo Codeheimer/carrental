@@ -46,7 +46,8 @@ public class SecurityConfig {
                     "/api/vehicle/",
                     "/api/vehicle/{id}",
                     "/api/image/***",
-                    "/user/**").permitAll()
+                    "/user/**",
+                    "/ui/**").permitAll()
                 .requestMatchers("mywebsocket/**").permitAll()
                 .requestMatchers("/auth/user/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")

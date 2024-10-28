@@ -6,6 +6,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,6 +31,22 @@ public class Participant extends PersistentEntity {
     private Instant birthdate;
 
     private String gender;
+
+    @ManyToOne
+    @JoinColumn(name = "region_id")
+    private AddressLocation region;
+
+    @ManyToOne
+    @JoinColumn(name = "province_id")
+    private AddressLocation province;
+
+    @ManyToOne
+    @JoinColumn(name = "municipality_id")
+    private AddressLocation municipality;
+
+    @ManyToOne
+    @JoinColumn(name = "barangay_id")
+    private AddressLocation barangay;
 
     private String address;
 
@@ -80,6 +98,38 @@ public class Participant extends PersistentEntity {
         this.gender = gender;
     }
 
+    public AddressLocation getRegion() {
+        return region;
+    }
+
+    public void setRegion(final AddressLocation region) {
+        this.region = region;
+    }
+
+    public AddressLocation getProvince() {
+        return province;
+    }
+
+    public void setProvince(final AddressLocation province) {
+        this.province = province;
+    }
+
+    public AddressLocation getMunicipality() {
+        return municipality;
+    }
+
+    public void setMunicipality(final AddressLocation municipality) {
+        this.municipality = municipality;
+    }
+
+    public AddressLocation getBarangay() {
+        return barangay;
+    }
+
+    public void setBarangay(final AddressLocation barangay) {
+        this.barangay = barangay;
+    }
+
     public String getAddress() {
         return address;
     }
@@ -120,7 +170,7 @@ public class Participant extends PersistentEntity {
         this.roles = roles;
     }
 
-    public String getDisplayName(){
+    public String getDisplayName() {
         return this.firstName + " " + this.lastName;
     }
 
@@ -148,9 +198,10 @@ public class Participant extends PersistentEntity {
         this.deactived = deactived;
     }
 
-    public List<ParticipantRoles> getRolesEnum(){
-        if(StringUtils.isEmpty(this.getRoles()))
+    public List<ParticipantRoles> getRolesEnum() {
+        if (StringUtils.isEmpty(this.getRoles())) {
             return Collections.emptyList();
+        }
 
         return Arrays.stream(this.getRoles().split(","))
             .map(ParticipantRoles::valueOf)

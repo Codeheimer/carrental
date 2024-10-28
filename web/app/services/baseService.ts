@@ -1,5 +1,10 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
+export interface Header {
+    name: string,
+    value: string
+}
+
 export abstract class BaseService {
     protected getBaseURL(): string {
         return process.env.BASE_URI as string;
@@ -20,17 +25,23 @@ export abstract class BaseService {
         }
     }
 
-    public getHeaders(token: string | null = null): Record<string, string> {
+    public getHeaders(token: string | null = null, ...ownHeaders: Header[]): Record<string, string> {
         let headers = {};
         if (token) {
             headers = this.addHeader(headers, 'Authorization', `Bearer ${token}`);
         }
         headers = this.addHeader(headers, 'Content-Type', 'application/json');
+
+        if (ownHeaders && ownHeaders.length > 0) {
+            console.log(`adding own headers ${JSON.stringify(ownHeaders)}`)
+            ownHeaders.forEach(h => (headers = this.addHeader(headers, h.name, h.value)))
+        }
         //console.log("Headers", headers);
         return headers;
     }
 
     private addHeader(headers: Record<string, string>, key: string, value: string): Record<string, string> {
+        //console.log(`${key}:${value}`)
         return { ...headers, [key]: value }
     }
 }

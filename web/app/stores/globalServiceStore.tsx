@@ -7,6 +7,7 @@ import { AdminService, AdminServiceImpl } from "../services/adminService";
 import { ResourceService, ResourceServiceImpl } from "../services/resourceService";
 import { ParticipantService, ParticipantServiceImpl } from "../services/participantService";
 import { GeolocationService, GeolocationServiceImpl } from "../services/geolocationService";
+import { UtilityService, UtilityServiceImpl } from "../services/utilityService";
 
 interface GlobalServiceStore {
     authenticationService: AuthenticationService,
@@ -16,7 +17,8 @@ interface GlobalServiceStore {
     adminService: AdminService,
     resourceService: ResourceService,
     participantService: ParticipantService,
-    geolocationService: GeolocationService
+    geolocationService: GeolocationService,
+    utilityService: UtilityService
 }
 
 const useGlobalServiceStore = create<GlobalServiceStore>((set) => ({
@@ -27,7 +29,8 @@ const useGlobalServiceStore = create<GlobalServiceStore>((set) => ({
     adminService: new AdminServiceImpl(),
     resourceService: new ResourceServiceImpl(),
     participantService: new ParticipantServiceImpl(),
-    geolocationService: new GeolocationServiceImpl()
+    geolocationService: new GeolocationServiceImpl(),
+    utilityService: new UtilityServiceImpl()
 
 }))
 
