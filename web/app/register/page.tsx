@@ -9,19 +9,28 @@ import useGlobalServiceStore from "../stores/globalServiceStore";
 import { useRouter } from "next/navigation";
 import FileUpload, { FileuploadDetails } from "../components/fields/fileUpload";
 import Checkbox, { CheckboxDetails } from "../components/fields/checkbox";
+import { LookUp } from "../services/utilityService";
 
 export default function RegistrationPage() {
     const [error, setError] = useState(defaultErrorDetails);
     const alertError = useRef<HTMLDivElement>(null);
-    const { registrationService } = useGlobalServiceStore();
+    const { registrationService, utilityService } = useGlobalServiceStore();
     const formRef = useRef<HTMLFormElement>(null);
     const router = useRouter();
+    const [regions, setRegions] = useState<LookUp[]>([]);
+    const [provinces, setProvinces] = useState<LookUp[]>([]);
+    const [municipality, setMunicipality] = useState<LookUp[]>([]);
+    const [barangay, setBarangay] = useState<LookUp[]>([]);
 
     const [identification, setIdentification] = useState<File | null>(null);
     const [businessPermit, setBusinessPermit] = useState<File | null>(null);
     const [profilePicture, setProfilePicture] = useState<File | null>(null);
 
     const [showBusinessPermitUpload, setShowBusinessPermitUpload] = useState<boolean>(false);
+
+    const [selectedProvice, setSelectedProvince] = useState<string>('');
+    const [selectedMunicipality, setSelectedMunicipality] = useState<string>('');
+    const [selectedBarangay, setSelectedBarangay] = useState<string>('');
 
     useEffect(() => {
         if (error.hasError() && alertError.current) {
@@ -31,6 +40,13 @@ export default function RegistrationPage() {
                 inline: 'center'
             });
         }
+
+        const prepareRegionDropdown = async () => {
+            const regions: LookUp[] = await utilityService.fetchAddressType('REGION');
+            setRegions(regions);
+        }
+
+        prepareRegionDropdown();
     }, [error]);
 
     const register = (event: React.FormEvent): void => {
@@ -54,6 +70,7 @@ export default function RegistrationPage() {
         jsonData['businessOwner'] = jsonData['businessOwner'] === 'on' ? true : false;
 
         const data = new FormData();
+        
         data.append('registrationData', new Blob([JSON.stringify(jsonData)], { type: 'application/json' }))
         if (identification) {
             console.log("adding identification")
@@ -105,6 +122,42 @@ export default function RegistrationPage() {
         setShowBusinessPermitUpload(!checked);
     };
 
+    const prepareAddressDropdown = async (parentValue: string, parentName: string, target: string, processOptions: (options: LookUp[]) => void) => {
+        if (formRef.current) {
+            const options: LookUp[] = await utilityService.fetchAddressType(target, parentName.toUpperCase(), parentValue);
+            processOptions(options);
+        }
+    }
+
+    const resetAddressFields = (triggerField: string) => {
+        switch (triggerField) {
+            case "region":
+                setProvinces([]);
+                setSelectedProvince('');
+                resetMunicipality();
+                resetBarangay();
+                break;
+            case "province":
+                resetMunicipality();
+                resetBarangay();
+                break;
+            case "municipality":
+                resetBarangay();
+            default:
+                break;
+        }
+    }
+
+    const resetMunicipality = () => {
+        setMunicipality([]);
+        setSelectedMunicipality('');
+    }
+
+    const resetBarangay = () => {
+        setBarangay([]);
+        setSelectedBarangay('');
+    }
+
     const firstName: TextboxDetails = {
         label: "First Name",
         name: "firstName",
@@ -130,12 +183,53 @@ export default function RegistrationPage() {
         options: [
             { value: "male", label: "Male" },
             { value: "female", label: "Female" }
-        ],
-        addBlank: true
+        ]
+    }
+
+    const regionDetails: DropdownDetails = {
+        label: "Region",
+        name: "region",
+        options: [...regions.map(r => ({ value: r.value, label: r.value }))],
+        onValueChange: (value) => {
+            resetAddressFields("region");
+            prepareAddressDropdown(value, 'region', 'PROVINCE', (options) => setProvinces(options));
+        }
+    }
+
+    const provinceDetails: DropdownDetails = {
+        label: "Province",
+        name: "province",
+        options: [...provinces.map(r => ({ value: r.value, label: r.value }))],
+        onValueChange: (value) => {
+            resetAddressFields("province");
+            prepareAddressDropdown(value, 'province', 'MUNICIPALITY', (options) => setMunicipality(options));
+            setSelectedProvince(value);
+        },
+        value: selectedProvice
+    }
+
+    const municipalityDetails: DropdownDetails = {
+        label: "Municipality",
+        name: "municipality",
+        options: [...municipality.map(r => ({ value: r.value, label: r.value }))],
+        onValueChange: (value) => {
+            resetAddressFields("municipality");
+            prepareAddressDropdown(value, 'municipality', 'BARANGAY', (options) => setBarangay(options));
+            setSelectedMunicipality(value)
+        },
+        value: selectedMunicipality
+    }
+
+    const barangayDetails: DropdownDetails = {
+        label: "Barangay",
+        name: "barangay",
+        options: [...barangay.map(r => ({ value: r.value, label: r.value }))],
+        onValueChange: (value) => { setSelectedBarangay(value) },
+        value: selectedBarangay
     }
 
     const address: TextboxDetails = {
-        label: "Address",
+        label: "Street Address",
         name: "address",
         isRequired: true
     }
@@ -193,6 +287,11 @@ export default function RegistrationPage() {
                 <Textbox {...lastName} />
                 <Textbox {...birthday} />
                 <Dropdown {...gender} />
+                <hr className="border w-3/4 m-3 border-solid border-t-1 border-gray-300" />
+                <Dropdown {...regionDetails} />
+                <Dropdown {...provinceDetails} />
+                <Dropdown {...municipalityDetails} />
+                <Dropdown {...barangayDetails} />
                 <Textbox {...address} />
                 <Textbox {...phone} />
                 <hr className="border w-3/4 m-3 border-solid border-t-1 border-gray-300" />

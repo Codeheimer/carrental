@@ -2,8 +2,10 @@ package com.thesis.carrental.services;
 
 import com.thesis.carrental.dtos.RegistrationRequest;
 import com.thesis.carrental.dtos.RegistrationResponse;
+import com.thesis.carrental.entities.AddressLocation;
 import com.thesis.carrental.entities.Participant;
 import com.thesis.carrental.enums.ParticipantRoles;
+import com.thesis.carrental.repositories.AddressLocationRepository;
 import com.thesis.carrental.repositories.ParticipantRepository;
 import com.thesis.carrental.security.ParticipantUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ public class ParticipantUserDetailsService implements UserDetailsService {
     private ParticipantRepository participantRepository;
     @Autowired
     private PasswordEncoder encoder;
+    @Autowired
+    private AddressLocationRepository addressLocationRepository;
 
     @Autowired
     private FileUploadService fileUploadService;
@@ -59,6 +63,7 @@ public class ParticipantUserDetailsService implements UserDetailsService {
         }
 
         final Participant participant = registrationRequest.toParticipant();
+        populateAddressFields(participant, registrationRequest);
         participant.setPassword(encoder.encode(participant.getPassword()));
         participant.setStatus(PENDING);
 
@@ -81,12 +86,14 @@ public class ParticipantUserDetailsService implements UserDetailsService {
 
         final long id = participant.getId();
         if (id > 0) {
-            fileUploadService.saveFile(id,profilePicture,PROFILE_PICTURE,profileDir);
+            fileUploadService.saveFile(id, profilePicture, PROFILE_PICTURE, profileDir);
             final StringBuilder errorMessage = new StringBuilder();
-            final boolean identificationUploadSuccess = fileUploadService.saveFile(id,
+            final boolean identificationUploadSuccess = fileUploadService.saveFile(
+                id,
                 identification,
                 IDENTIFICATION,
-                participantUploads);
+                participantUploads
+            );
             if (!identificationUploadSuccess) {
                 errorMessage.append("Participant saved but failed to upload identification ");
             }
@@ -109,6 +116,26 @@ public class ParticipantUserDetailsService implements UserDetailsService {
         }
 
         return new RegistrationResponse("User Added Successfully", true);
+    }
+
+    private void populateAddressFields(
+        final Participant participant,
+        final RegistrationRequest registrationRequest
+    ) {
+        final String region = registrationRequest.region();
+        final String province = registrationRequest.province();
+        final String municipality = registrationRequest.municipality();
+        final String barangay = registrationRequest.barangay();
+
+        final AddressLocation regionAddressLocation = addressLocationRepository.findByNameAndParent(region,null);
+        final AddressLocation provinceAddressLocation = addressLocationRepository.findByNameAndParent(province,regionAddressLocation);
+        final AddressLocation municipalityAddressLocation = addressLocationRepository.findByNameAndParent(municipality,provinceAddressLocation);
+        final AddressLocation barangayAddressLocation = addressLocationRepository.findByNameAndParent(barangay,municipalityAddressLocation);
+
+        participant.setRegion(regionAddressLocation);
+        participant.setProvince(provinceAddressLocation);
+        participant.setMunicipality(municipalityAddressLocation);
+        participant.setBarangay(barangayAddressLocation);
     }
 
     private RegistrationResponse validateRequest(final RegistrationRequest registrationRequest) {
