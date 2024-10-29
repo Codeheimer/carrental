@@ -8,7 +8,7 @@ export interface SliderProps {
     onValueChange?: (current: number[]) => void
 }
 export default function GenericSlider({ max = 100, name, onValueChange = (current: number[]) => { } }: SliderProps) {
-    const [current, setCurrent] = useState<number[]>([0]);
+    const [current, setCurrent] = useState<number[]>([max]);
     const handleCurrent = (newCurrent: number[]) => {
         setCurrent(newCurrent);
         onValueChange(newCurrent);
