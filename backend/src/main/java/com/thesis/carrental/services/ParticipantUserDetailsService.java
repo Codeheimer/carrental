@@ -17,9 +17,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.thesis.carrental.constants.EmailTemplates.*;
 import static com.thesis.carrental.enums.FileUploadType.*;
 import static com.thesis.carrental.enums.ParticipantStatus.*;
 
@@ -35,6 +37,9 @@ public class ParticipantUserDetailsService implements UserDetailsService {
 
     @Autowired
     private FileUploadService fileUploadService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Value("${fileupload.participants.dir}")
     private String participantUploads;
@@ -115,6 +120,12 @@ public class ParticipantUserDetailsService implements UserDetailsService {
             }
         }
 
+        emailService.send(participant.getEmail(),
+            FROM_EMAIL,
+            "Successfully created an account",
+            REG_SUCCESS_TEMPLATE,
+            Map.of()
+        );
         return new RegistrationResponse("User Added Successfully", true);
     }
 
