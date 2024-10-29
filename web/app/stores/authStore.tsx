@@ -14,7 +14,9 @@ interface Session {
   devMode: boolean
 }
 
-const defaultLinks: HeadLink[] = [{ label: "Home", path: "/" }];
+const defaultLinks: HeadLink[] = [{ label: "Home", path: "/" },
+    {label:"Catalogue", path:"/car-catalogue"}
+];
 export class SessionImpl implements Session {
   constructor(
     public loggedIn: boolean = false,
