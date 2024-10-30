@@ -4,6 +4,7 @@ import { VehicleResult } from '../stores/vehicleFilteringStore';
 import { Coordinate } from '../components/google/maps/googleMap';
 
 export interface IVehicle {
+    id: number
     plateNumber: string
     make: string
     model: string
@@ -23,6 +24,7 @@ export interface IVehicle {
 
 export class Vehicle implements IVehicle {
     constructor(
+        public id: number = 0,
         public plateNumber: string = "",
         public make: string = "",
         public model: string = "",
@@ -62,6 +64,7 @@ export interface IVehicleFilter {
     totalPages?: number;
     totalResult?: number;
     ownerId: number;
+    renterId?: number;
     userLocation?: Coordinate | null
 }
 
@@ -70,6 +73,7 @@ export interface VehicleService {
     filter: (filter: VehicleFilter, token?: string | null) => Promise<VehicleFilter>;
     fetch: (id: string) => Promise<Vehicle>;
     updateStatus: (newStatus: string, vehicleId: number) => Promise<VehicleSaveResponse>;
+    rentVehicle: (conversationId: number, vehicleId: number, renterId: number, token: string) => Promise<VehicleSaveResponse>;
 
 }
 
@@ -88,15 +92,19 @@ export class VehicleFilter implements IVehicleFilter {
         public totalPages: number = 0,
         public totalResult: number = 0,
         public ownerId: number = 0,
+        public renterId: number = 0,
         public userLocation: Coordinate | null = null
     ) { }
 
     static withOwnerId(ownerId: number): VehicleFilter {
         return new VehicleFilter("", false, "", "", "", "", 0, [], 0, 10, 0, 0, ownerId);
     }
+    static withRenterId(renterId: number): VehicleFilter {
+        return new VehicleFilter("", false, "", "", "", "", 0, [], 0, 10, 0, 0, 0, renterId);
+    }
 }
 
-export class VehicleService extends BaseService implements VehicleService {
+export class VehicleServiceImpl extends BaseService implements VehicleService {
 
     public save = async (data: FormData, token: string | null): Promise<VehicleSaveResponse> => {
         try {
@@ -162,6 +170,23 @@ export class VehicleService extends BaseService implements VehicleService {
             return response;
         } catch (error) {
             console.error('error:', error);
+            throw error;
+        }
+    }
+
+    public rentVehicle = async (conversationId: number, vehicleId: number, renterId: number, token: string): Promise<VehicleSaveResponse> => {
+        try {
+            const URL = `${this.getBaseURL()}${process.env.RENT_VEHICLE}`;
+            const axiosConfig: AxiosRequestConfig = {
+                method: 'POST',
+                headers: this.getHeaders(token),
+                data: { vehicle: vehicleId, renter: renterId, conversationId: conversationId }
+            }
+            const response = await this.doRequest<VehicleSaveResponse>(URL, axiosConfig);
+
+            return response;
+        } catch (error) {
+            console.error(`error: ${error}`);
             throw error;
         }
     }

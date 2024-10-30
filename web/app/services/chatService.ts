@@ -10,7 +10,7 @@ export interface ChatService {
     connect: (token: string | null, userId: string, callbackFunction: (message: ChatMessage) => void) => Promise<CompatClient>
     sendMessage: (client: CompatClient, message: ChatMessage) => void
     fetchConversations: (token: string) => Promise<ConversationImpl[]>
-    disconnect: (client: CompatClient) => void
+    disconnect: (client: CompatClient, token: string | null) => void
 }
 
 export class ChatServiceImpl extends BaseService implements ChatService {
@@ -63,11 +63,17 @@ export class ChatServiceImpl extends BaseService implements ChatService {
         }
     }
 
-    public disconnect = (client: CompatClient): void => {
+    public disconnect = (client: CompatClient, token: string | null): void => {
         if (client && client.connected) {
-            client.disconnect(() => {
-                //console.log('Disconnected from WebSocket.');
-            });
+            client.disconnect(
+                () => {
+                    // Callback code, if needed
+                },
+                {
+                    Authorization: `bearer ${token}`,
+                    user: token as string
+                }
+            );
         }
     }
 }

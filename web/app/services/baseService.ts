@@ -11,7 +11,6 @@ export abstract class BaseService {
     };
 
     protected async doRequest<T>(url: string, config: AxiosRequestConfig): Promise<T> {
-        //console.log(`calling ${url} with confing ${JSON.stringify(config)}`)
         try {
             const response: AxiosResponse<T> = await axios({ url, ...config });
             return response.data;
@@ -33,7 +32,7 @@ export abstract class BaseService {
         headers = this.addHeader(headers, 'Content-Type', 'application/json');
 
         if (ownHeaders && ownHeaders.length > 0) {
-            console.log(`adding own headers ${JSON.stringify(ownHeaders)}`)
+            //console.log(`adding own headers ${JSON.stringify(ownHeaders)}`)
             ownHeaders.forEach(h => (headers = this.addHeader(headers, h.name, h.value)))
         }
         //console.log("Headers", headers);

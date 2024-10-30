@@ -1,6 +1,9 @@
 const VEHICLE_AGE_DIVIDER = ":";
 
-export const truncate = (text: string, length: number): string => {
+export const truncate = (text: string | undefined, length: number): string => {
+    if (!text) {
+        return "";
+    }
     return text.length > length ? text.slice(0, length) + '...' : text;
 }
 

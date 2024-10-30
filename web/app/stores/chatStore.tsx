@@ -1,8 +1,7 @@
 import { create } from "zustand"
-import { ChatMessage, ChatMessageImpl } from "../components/chatModule/components/message"
+import { ChatMessage, ChatMessageImpl, ConversationResponse, LoginUpdate, VehicleRent, WSPayloads } from "../components/chatModule/components/message"
 import { CompatClient } from "@stomp/stompjs"
 import useAuthStore from "./authStore"
-import useSound from "use-sound"
 
 export interface ChatParticipant {
     participantId: string,
@@ -11,6 +10,7 @@ export interface ChatParticipant {
 export interface Conversation {
     conversationId: string
     sendToId: string
+    vehicleId: number,
     conversationTitle: string
     online: boolean
     senderLastMessage: string
@@ -23,6 +23,7 @@ export class ConversationImpl implements Conversation {
     constructor(
         public conversationId: string = "",
         public sendToId: string = "",
+        public vehicleId: number,
         public conversationTitle: string = "Anonymous",
         public online: boolean = false,
         public senderLastMessage: string = "",
@@ -50,17 +51,16 @@ interface ChatStore {
     toggleChat: () => void;
     setCurrentConversation: (conversation: ConversationImpl | null) => void;
     setConversations: (conversations: ConversationImpl[]) => void;
-    onReceiveMessage: (message: ChatMessage) => void;
+    onReceiveMessage: (message: WSPayloads) => void;
 }
 
 const useChatStore = create<ChatStore>((set, get) => {
-    const getConversationNoIdThatContainsParticipants = (conversations: ConversationImpl[], userId: string, recipientId: string, senderId: string): number => {
+    const getConversationNoIdThatContainsParticipants = (conversations: ConversationImpl[], userId: string, recipientId: string, senderId: string, vehicleId: number): number => {
         return conversations.findIndex(c => {
-            //c.sendToId , session.userId , senderId , recipientId  53 54 53 54
-            //console.log("c.sendToId , session.userId , senderId , recipientId ", c.sendToId, userId, senderId, recipientId)
-            //console.log(Number(c.sendToId) === Number(senderId), Number(userId) === Number(recipientId), Number(c.conversationId) === 0)
-            return Number(c.sendToId) === Number(senderId) &&
-                Number(userId) === Number(recipientId) && Number(c.conversationId) === 0
+            return (Number(c.sendToId) === Number(senderId)) &&
+                (Number(userId) === Number(recipientId)) &&
+                (c.vehicleId === vehicleId) &&
+                Number(c.conversationId) === 0
         });
     }
 
@@ -97,7 +97,13 @@ const useChatStore = create<ChatStore>((set, get) => {
                 };
                 updatedConversations[conversationIndex] = updatedConversation;
             } else {
-                const newlyCreatedConvoNoId: number = getConversationNoIdThatContainsParticipants(conversations, session.userId as string, message.recipientId, message.senderId);
+                const newlyCreatedConvoNoId: number = getConversationNoIdThatContainsParticipants(
+                    conversations,
+                    session.userId as string,
+                    message.recipientId,
+                    message.senderId,
+                    message.vehicleId);
+
                 if (newlyCreatedConvoNoId > -1) {
                     let existingConversation = conversations[newlyCreatedConvoNoId];
                     existingConversation = {
@@ -138,10 +144,15 @@ const useChatStore = create<ChatStore>((set, get) => {
 
     }
 
-    const processWSResponse = (message: ChatMessage) => {
+    const processWSResponse = (message: ConversationResponse) => {
         const { session } = useAuthStore.getState();
         const { conversations, currentConversation } = get();
-        const convoIndex: number = getConversationNoIdThatContainsParticipants(conversations, session.userId as string, message.recipientId, message.senderId);
+        const convoIndex: number = getConversationNoIdThatContainsParticipants(
+            conversations,
+            session.userId as string,
+            message.recipientId,
+            message.senderId,
+            message.vehicleId);
         const initiatedConvo = conversations[convoIndex];
         if (currentConversation && initiatedConvo.equalsBySender(currentConversation)) {
             const updatedCurrentConversation: ConversationImpl = {
@@ -159,12 +170,75 @@ const useChatStore = create<ChatStore>((set, get) => {
             }
             return c; // Return the original conversation if not updating
         });
-
-
         set({ conversations: updatedConversations })
-
-
     }
+
+
+
+    const processLoginUpdate = (loginUpdate: LoginUpdate) => {
+        //console.log(`RECEIVED LOGIN STATE CHANGE ${JSON.stringify(loginUpdate)}`)
+        const { conversations, currentConversation } = get();
+        if (currentConversation && Number(currentConversation.sendToId) === loginUpdate.participantId) {
+            const updatedCurrentConversation = { ...currentConversation, online: (loginUpdate.state === 'LOGIN') }
+            set({ currentConversation: updatedCurrentConversation });
+        }
+        const updatedConversations = conversations.map(c => Number(c.sendToId) === loginUpdate.participantId ? { ...c, online: (loginUpdate.state === 'LOGIN') } : c);
+        set({ conversations: updatedConversations });
+    }
+
+    const processVehicleRent = (vehicleRent: VehicleRent) => {
+        const { conversations, currentConversation } = get();
+        if (currentConversation && Number(currentConversation.conversationId) === vehicleRent.conversationId) {
+            const updatedCurrentConversation = {
+                ...currentConversation, messages: [...currentConversation.messages,
+                new ChatMessageImpl(
+                    String(vehicleRent.conversationId),
+                    undefined,
+                    undefined,
+                    vehicleRent.vehicleId,
+                    vehicleRent.message,
+                    undefined,
+                    null,
+                    vehicleRent.type,
+                    undefined,
+                    vehicleRent.chatMessageType)]
+            }
+            set({ currentConversation: updatedCurrentConversation });
+        }
+        const updatedConversations = conversations.map(c => Number(c.conversationId) === vehicleRent.conversationId ?
+            {
+                ...c, messages: [...c.messages,
+                new ChatMessageImpl(
+                    String(vehicleRent.conversationId),
+                    undefined,
+                    undefined,
+                    vehicleRent.vehicleId,
+                    vehicleRent.message,
+                    undefined,
+                    null,
+                    vehicleRent.type,
+                    undefined,
+                    vehicleRent.chatMessageType)]
+            } : c);
+        set({ conversations: updatedConversations });
+    }
+
+    const isWSResponseChatMessage = (response: WSPayloads): response is ChatMessage => {
+        return response.type === "CHAT";
+    }
+
+    const isWSResponseConversationResponse = (response: WSPayloads): response is ConversationResponse => {
+        return response.type === "WS_RESPONSE";
+    }
+
+    const isWSResponseLoginUpdate = (response: WSPayloads): response is LoginUpdate => {
+        return response.type === "LOGIN_STATE";
+    }
+
+    const isWSResponseVehicleRent = (response: WSPayloads): response is VehicleRent => {
+        return response.type === "VEHICLE_RENT";
+    }
+
     return {
         client: null,
         setClient: (client: CompatClient | null) => set({ client: client }),
@@ -216,16 +290,15 @@ const useChatStore = create<ChatStore>((set, get) => {
             //lastly upate the chat bubble notification count
             set({ notificationCount: notificationCout })
         },
-        onReceiveMessage: (message: ChatMessage) => {
-            switch (message.type) {
-                case "CHAT":
-                    processMessage(message);
-                    break;
-                case "WS_RESPONSE":
-                    processWSResponse(message);
-                    break;
-                default:
-                    break;
+        onReceiveMessage: (message: WSPayloads) => {
+            if (isWSResponseChatMessage(message)) {
+                processMessage(message);
+            } else if (isWSResponseConversationResponse(message)) {
+                processWSResponse(message);
+            } else if (isWSResponseLoginUpdate(message)) {
+                processLoginUpdate(message);
+            } else if (isWSResponseVehicleRent(message)) {
+                processVehicleRent(message);
             }
         }
     };

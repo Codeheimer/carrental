@@ -1,5 +1,6 @@
 package com.thesis.carrental.controllers;
 
+import com.thesis.carrental.dtos.RentRequest;
 import com.thesis.carrental.dtos.VehicleSaveResponse;
 import com.thesis.carrental.dtos.VehicleUpdateRequest;
 import com.thesis.carrental.dtos.VehicleUpdateResponse;
@@ -8,9 +9,8 @@ import com.thesis.carrental.filters.VehicleFilter;
 import com.thesis.carrental.services.FileUploadService;
 import com.thesis.carrental.services.JWTService;
 import com.thesis.carrental.services.ParticipantService;
+import com.thesis.carrental.services.RentedVehicleService;
 import com.thesis.carrental.services.VehicleService;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -40,6 +40,8 @@ public class VehicleController {
 
     private final ParticipantService participantService;
     private final FileUploadService fileUploadService;
+
+    private final RentedVehicleService rentedVehicleService;
     private final String VEHICLE_UPLOAD_PATH;
 
     @Autowired
@@ -48,12 +50,14 @@ public class VehicleController {
         final JWTService jwtService,
         final ParticipantService participantService,
         final FileUploadService fileUploadService,
+        final RentedVehicleService rentedVehicleService,
         @Value("${fileupload.vehicles.dir}") final String path
     ) {
         this.vehicleService = vehicleService;
         this.jwtService = jwtService;
         this.participantService = participantService;
         this.fileUploadService = fileUploadService;
+        this.rentedVehicleService = rentedVehicleService;
         this.VEHICLE_UPLOAD_PATH = path;
     }
 
@@ -120,6 +124,16 @@ public class VehicleController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new VehicleUpdateResponse("Failed to change status", false));
+        }
+    }
+
+    @PostMapping("/rent")
+    public ResponseEntity<?> rentVehicle(@RequestBody final RentRequest rentRequest){
+        try{
+            rentedVehicleService.save(rentRequest.conversationId(), rentRequest.vehicle(), rentRequest.renter());
+            return ResponseEntity.ok(new VehicleSaveResponse("Vehicle successfully rented to user.",true));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new VehicleSaveResponse(e.getMessage(),false));
         }
     }
 }

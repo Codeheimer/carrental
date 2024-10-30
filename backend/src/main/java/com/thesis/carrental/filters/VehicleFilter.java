@@ -3,10 +3,12 @@ package com.thesis.carrental.filters;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.thesis.carrental.dtos.Coordinate;
 import com.thesis.carrental.dtos.VehicleResult;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -22,6 +24,8 @@ public class VehicleFilter extends AbstractFilter {
     private String engineDisplacement;
     private int seater;
     private boolean own;
+
+    private Long renterId;
 
     private int maxKm;
 
@@ -136,6 +140,14 @@ public class VehicleFilter extends AbstractFilter {
         this.userLocation = userLocation;
     }
 
+    public Long getRenterId() {
+        return renterId;
+    }
+
+    public void setRenterId(final Long renterId) {
+        this.renterId = renterId;
+    }
+
     @Override
     public Pageable next() {
         return new VehicleFilter(
@@ -207,6 +219,7 @@ public class VehicleFilter extends AbstractFilter {
             (isEmpty(this.model)) &&
             (isEmpty(this.year)) &&
             (isEmpty(this.engineDisplacement)) &&
-            (this.seater == 0);
+            (this.seater == 0) &&
+            (Objects.isNull(this.renterId) || this.renterId.doubleValue() == 0);
     }
 }
