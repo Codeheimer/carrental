@@ -15,4 +15,9 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     @Query("SELECT c FROM Conversation c " +
         "JOIN c.participants p WHERE  p.participant.id = :participantId ")
     List<Conversation> findParticipantIncludedIn(@Param("participantId") final Long participantId);
+
+    @Query("SELECT p.participant.id FROM Conversation c " +
+        "JOIN c.participants p WHERE p.participant.id != :participantId " +
+        "AND c IN (SELECT cp.conversation FROM ConversationParticipant cp WHERE cp.participant.id = :participantId)")
+    List<Long> findOtherParticipantsThatIsInConversationWith(@Param("participantId") final Long participantId);
 }

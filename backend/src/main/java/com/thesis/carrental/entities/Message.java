@@ -1,7 +1,10 @@
 package com.thesis.carrental.entities;
 
+import com.thesis.carrental.enums.ChatMessageType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -21,12 +24,17 @@ public class Message extends PersistentEntity {
 
     private String content;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private ChatMessageType chatMessageType;
+
     private Message(){}
 
-    public Message(final Conversation conversation, final Participant sender, final String content){
+    public Message(final Conversation conversation, final Participant sender, final String content,final ChatMessageType chatMessageType){
         this.conversation = conversation;
         this.sender = sender;
         this.content = content;
+        this.chatMessageType = chatMessageType;
     }
 
     public Conversation getConversation() {
@@ -51,5 +59,13 @@ public class Message extends PersistentEntity {
 
     public void setContent(final String content) {
         this.content = content;
+    }
+
+    public ChatMessageType getChatMessageType() {
+        return chatMessageType;
+    }
+
+    public void setChatMessageType(final ChatMessageType chatMessageType) {
+        this.chatMessageType = chatMessageType;
     }
 }

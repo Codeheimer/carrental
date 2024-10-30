@@ -62,13 +62,13 @@ export default function ClientAuthenticationInitializer() {
 
     useEffect(() => {
         intializeLoggedInUser();
-    },[]);
+    }, []);
 
     const handleLoginStateChange = useCallback(() => {
         if (session.loggedIn) {
             connectChat();
         } else if (client) {
-            chatService.disconnect(client);
+            chatService.disconnect(client, session.token);
             setClient(null);
         }
     }, [session.loggedIn]);
@@ -81,7 +81,7 @@ export default function ClientAuthenticationInitializer() {
     const handleBeforeUnload = useCallback(() => {
         if (client) {
             logout();
-            chatService.disconnect(client);
+            chatService.disconnect(client, session.token);
             setClient(null);
         }
     }, [client]);

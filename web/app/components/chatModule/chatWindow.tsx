@@ -1,16 +1,22 @@
 'use client';
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import Message, { ChatMessage, ChatMessageImpl } from "./components/message";
-import useChatStore, { ChatParticipant, ConversationImpl } from "@/app/stores/chatStore";
+import useChatStore, { ConversationImpl } from "@/app/stores/chatStore";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 import useAuthStore from "@/app/stores/authStore";
 import GenericButton, { createButtonDetails } from "../fields/genericButton";
+import { truncate } from "@/app/utilities/stringUtils";
+import { DropdownMenu, DropdownMenuItem } from "../shadcn/dropdown-menu";
+import { DropdownMenuContent, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import { Button } from "../shadcn/button";
+import { UserRoles } from "../enums/userRoles";
+import Error from "next/error";
 
 export default function ChatWindow() {
     const { currentConversation, setCurrentConversation, setConversations, conversations } = useChatStore();
     const messageContainerRef = useRef<HTMLDivElement | null>(null);
     const [draft, setDraft] = useState<string>('');
-    const { chatService } = useGlobalServiceStore();
+    const { chatService, vehicleService } = useGlobalServiceStore();
     const { session } = useAuthStore();
     const { client } = useChatStore();
 
@@ -49,13 +55,20 @@ export default function ChatWindow() {
     }
 
     const newMessage = (currentConversation: ConversationImpl): ChatMessageImpl | undefined => {
-        const message = new ChatMessageImpl(currentConversation.conversationId, currentConversation.sendToId, session.userId as string, draft, new Date().toISOString());
-        console.log(`creating message ${JSON.stringify(message)}`)
+        const message = new ChatMessageImpl(currentConversation.conversationId, currentConversation.sendToId, session.userId as string, currentConversation.vehicleId, draft, new Date().toISOString());
+        //console.log(`creating message ${JSON.stringify(message)}`)
         return message;
     }
 
     const exitConvesation = (): void => {
         setCurrentConversation(null);
+    }
+
+    const handleTagListingAsRent = async () => {
+        if (currentConversation && currentConversation.vehicleId && currentConversation.sendToId && session.token) {
+            const response = await vehicleService.rentVehicle(Number(currentConversation.conversationId), currentConversation.vehicleId, Number(currentConversation.sendToId), session.token);
+        }
+
     }
 
     const addToMessages = (chat: ChatMessage): void => {
@@ -87,9 +100,9 @@ export default function ChatWindow() {
 
         <div className="flex flex-row justify-start space-y-1.5 rounded-lg">
             <div className="mt-2 mx-1" onClick={exitConvesation}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="text-foreground icon icon-tabler icon-tabler-arrow-left" 
-                width="28" height="28" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" fill="none" 
-                strokeLinecap="round" strokeLinejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" className="text-foreground icon icon-tabler icon-tabler-arrow-left"
+                    width="28" height="28" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" fill="none"
+                    strokeLinecap="round" strokeLinejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                     <path d="M5 12l14 0" />
                     <path d="M5 12l6 6" />
@@ -97,9 +110,21 @@ export default function ChatWindow() {
                 </svg>
             </div>
             <div className="flex items-center justify-center p-1 m-1">
-                <div className="mx-1">{currentConversation?.conversationTitle}</div>
+                <div className="mx-1">{truncate(currentConversation?.conversationTitle, 22)}</div>
                 <div className={`mx-1 w-4 h-4 ${currentConversation?.online ? 'bg-green-500' : 'bg-gray-400'} rounded-full`}></div>
             </div>
+            {session.permissions.includes(UserRoles.ROLE_RENTER) &&
+                <div className="z-50">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant={"outline"}>Actions</Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-24 bg-background text-foreground border border-solid rounded-lg m-2">
+                            <DropdownMenuItem onClick={handleTagListingAsRent} >Tag Rent</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            }
         </div>
 
         <div ref={messageContainerRef} className="pr-4 h-[474px] my-2 p-2 overflow-y-auto" style={{ minWidth: '100%' }}>
@@ -110,7 +135,7 @@ export default function ChatWindow() {
         <div className="flex items-center pt-0">
             <form className="flex items-center justify-center w-full space-x-2">
                 <input value={draft} onChange={updateDraft} onKeyDown={send}
-                    className="flex h-10 w-full rounded-md border border-[#e5e7eb] px-3 py-2 text-sm placeholder-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#9ca3af] disabled:cursor-not-allowed disabled:opacity-50 text-[#030712] focus-visible:ring-offset-2"
+                    className="flex h-10 w-full rounded-md border border-[#e5e7eb] px-3 py-2 text-sm focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-offset-2"
                     placeholder="Type your message">
                 </input>
                 <GenericButton {...createButtonDetails("Send", "button", send)} />

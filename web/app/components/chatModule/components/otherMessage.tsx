@@ -1,12 +1,7 @@
-'use client';
-
-import useChatStore from "@/app/stores/chatStore";
 import { ChatMessage } from "./message";
 
 export default function OtherMessage(chat: ChatMessage) {
-    const { currentConversation } = useChatStore();
-
-    return (<div className="flex gap-3 my-4 text-gray-600 text-sm flex-1">
+    return (<div className="flex gap-3 my-4 text-sm flex-1">
         <div className="flex justify-start items-start" style={{ marginTop: '5px' }}>
             <span className="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
                 <div className="rounded-full bg-gray-100 border p-1">
@@ -21,7 +16,7 @@ export default function OtherMessage(chat: ChatMessage) {
         </div>
         <div className="flex flex-col items-start">
             <span className="block font-extrabold text-gray-700 my-1">
-                {currentConversation?.conversationTitle}
+                {chat.chatTitle}
             </span>
             <p className="tracking-wider max-w-[300px] my-1 font-medium text-white bg-blue-400 p-2 rounded-3xl whitespace-normal break-words">
                 {chat.message}

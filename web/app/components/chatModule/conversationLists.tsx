@@ -7,7 +7,7 @@ export default function ConversationList() {
     const { conversations, setCurrentConversation } = useChatStore();
 
     const loadConversation = (convo: ConversationImpl): void => {
-        console.log(`SETTING CURRENT CONVO `,JSON.stringify(convo))
+        console.log(`SETTING CURRENT CONVO `, JSON.stringify(convo))
         setCurrentConversation(convo);
     }
 
@@ -30,9 +30,14 @@ export default function ConversationList() {
                                     {convo.conversationTitle.charAt(0)}
                                 </div>
                             </div>
-                            <div className={`flex-1 min-w-0 ${convo.unread && 'font-black'}`}>
-                                <p className="flex flex-row truncate">{convo.conversationTitle}</p>
-                                <p className="text-sm">{truncate(convo.senderLastMessage, 50)}</p>
+                            <div className={`flex flex-col justify-start w-full ${convo.unread && 'font-extrabold'}`}>
+                                <div className="flex flex-row items-stretch justify-stretch">
+                                    <div className="truncate">{convo.conversationTitle}</div>
+                                    <div>
+                                        <div className={`mx-1 mt-2 w-4 h-4 ${convo.online ? 'bg-green-500' : 'bg-gray-400'} rounded-full`}></div>
+                                    </div>
+                                </div>
+                                <div className="text-sm">{truncate(convo.senderLastMessage, 50)}</div>
                             </div>
                         </div>
                     </li>)}

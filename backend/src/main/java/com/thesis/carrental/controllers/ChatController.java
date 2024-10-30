@@ -20,7 +20,6 @@ public class ChatController extends BaseController {
     private final ChatService chatService;
 
     @Autowired
-
     public ChatController(JWTService jwtService, ChatService chatService) {
         this.jwtService = jwtService;
         this.chatService = chatService;

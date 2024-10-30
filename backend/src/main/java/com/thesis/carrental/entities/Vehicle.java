@@ -1,8 +1,11 @@
 package com.thesis.carrental.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.thesis.carrental.enums.VehicleStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Transient;
 
 import java.util.ArrayList;
@@ -35,7 +38,8 @@ public class Vehicle extends PersistentEntity {
 
     private Double longitude;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private VehicleStatus status;
 
     @Column(name="daily_price")
     private double price;
@@ -132,11 +136,11 @@ public class Vehicle extends PersistentEntity {
         this.longitude = longitude;
     }
 
-    public String getStatus() {
+    public VehicleStatus getStatus() {
         return status;
     }
 
-    public void setStatus(final String status) {
+    public void setStatus(final VehicleStatus status) {
         this.status = status;
     }
 

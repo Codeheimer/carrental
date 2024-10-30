@@ -70,7 +70,9 @@ public class VehicleService {
             result = vehicleRepository.byOwner(owner.getId(), filter);
         } else if (filter.isFilterEmpty()) {
             result = vehicleRepository.findAll(filter);
-        } else {
+        } else if(filter.getRenterId() != null && filter.getRenterId() > 0){
+            result = vehicleRepository.byRenter(filter.getRenterId(),filter);
+        }else {
             result = vehicleRepository.filter(
                 filter.getSearch(),
                 filter.getMake(),
@@ -144,7 +146,7 @@ public class VehicleService {
             String.valueOf(owner.getId()),
             owner.getDisplayName(),
             DisplayUtil.generateVehicleListingAge(vehicle.getCreationDate()),
-            vehicle.getStatus(),
+            vehicle.getStatus().toString(),
             vehicle.getPrice(),
             fileUploads.stream().map(FileUpload::getPath).findFirst().orElse(""),
             pictures.stream().map(FileUpload::getPath).limit(1).collect(Collectors.toList())
@@ -153,13 +155,13 @@ public class VehicleService {
 
     public void save(final Vehicle vehicle, final Long owner) {
         vehicle.setOwner(owner);
-        vehicle.setStatus(VehicleStatus.AVAILABLE.toString());
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
         vehicleRepository.save(vehicle);
     }
 
     public void updateStatus(final VehicleUpdateRequest request) {
         final Vehicle vehicle = this.vehicleRepository.findById(request.vehicleId()).orElseThrow();
-        vehicle.setStatus(request.status().toString());
+        vehicle.setStatus(request.status());
         vehicleRepository.save(vehicle);
     }
 }

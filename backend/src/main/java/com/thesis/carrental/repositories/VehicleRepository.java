@@ -49,4 +49,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     @Query("SELECT v FROM Vehicle v WHERE :owner = v.owner ")
     Page<Vehicle> byOwner(@Param("owner") final Long owner, Pageable pageable);
+
+    @Query("SELECT v FROM Vehicle v LEFT JOIN RentedVehicle rv ON rv.vehicle = v WHERE rv.participant.id = :renterId")
+    Page<Vehicle> byRenter(@Param("renterId") final Long renterId, Pageable pageable);
 }

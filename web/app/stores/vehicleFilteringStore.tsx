@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { VehicleFilter } from "../services/vehicleService";
+import { Vehicle, VehicleFilter } from "../services/vehicleService";
 import useGlobalServiceStore from "./globalServiceStore";
 
 export interface VehicleResult {
@@ -12,6 +12,8 @@ export interface VehicleResult {
     status: string
     pictures: string[]
     price: number
+    details: Vehicle
+
 }
 
 interface VehicleFilteringStore {

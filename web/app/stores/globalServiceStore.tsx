@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { AuthenticationService, AuthenticationServiceImpl } from "../services/authenticationService";
 import { RegistrationService, RegistrationServiceImpl } from "../services/registrationService";
-import { VehicleService } from "../services/vehicleService";
+import { VehicleService, VehicleServiceImpl } from "../services/vehicleService";
 import { ChatService, ChatServiceImpl } from "../services/chatService";
 import { AdminService, AdminServiceImpl } from "../services/adminService";
 import { ResourceService, ResourceServiceImpl } from "../services/resourceService";
@@ -24,7 +24,7 @@ interface GlobalServiceStore {
 const useGlobalServiceStore = create<GlobalServiceStore>((set) => ({
     authenticationService: new AuthenticationServiceImpl(),
     registrationService: new RegistrationServiceImpl(),
-    vehicleService: new VehicleService(),
+    vehicleService: new VehicleServiceImpl(),
     chatService: new ChatServiceImpl(),
     adminService: new AdminServiceImpl(),
     resourceService: new ResourceServiceImpl(),

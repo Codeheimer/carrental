@@ -51,11 +51,14 @@ const useAuthStore = create<AuthStore>((set) => {
           links.push({ label: "Add your Car", path: "/vehicle/new" });
           links.push({ label: "My Listings", path: "/admin/listings" });
         }
+        if(permissions.includes(UserRoles.ROLE_RENTEE)){
+          links.push({ label: "My Rents", path: "/admin/rents" });
+        }
         if (permissions.includes(UserRoles.ADMIN)) {
           links.push({ label: "Users", path: "/admin/accounts" });
         }
         const devMode: boolean = Boolean(process.env.ADMIN_DEV_MODE);
-        console.log(`dev mode: ${devMode ? "On" : "Off"}`);
+        //console.log(`dev mode: ${devMode ? "On" : "Off"}`);
 
         const session: SessionImpl = new SessionImpl(true, token, links, userId, admin, permissions, displayName, devMode);
         if (devMode) {

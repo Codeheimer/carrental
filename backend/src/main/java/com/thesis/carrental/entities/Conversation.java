@@ -2,6 +2,8 @@ package com.thesis.carrental.entities;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
@@ -22,6 +24,18 @@ public class Conversation extends PersistentEntity {
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL)
     @OrderBy("creationDate ASC")
     private List<Message> messages = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "vehicle_id")
+    private Vehicle vehicle;
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
 
     public Set<ConversationParticipant> getParticipants() {
         return participants;

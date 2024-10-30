@@ -62,15 +62,16 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
         filterRenterOtherListings();
     }, [params.vehicleId, vehicleService])
 
-    const handleInitiateChatWithRenter = (listingOwnerId: number, owner: string) => {
+    const handleInitiateChatWithRenter = (listing: Vehicle) => {
         if (!session.loggedIn) {
             router.push("/login");
             return;
         }
         if (!chatOpen) {
-            const existingConversation = conversations.find(c => Number(c.sendToId) === Number(listingOwnerId));
+            listing.ownerId, listing.owner, listing.id
+            const existingConversation = conversations.find(c => (Number(c.sendToId) === Number(listing.ownerId)) && (c.vehicleId === listing.id));
             if (!existingConversation) {
-                const newConversation = new ConversationImpl("0", String(listingOwnerId), owner);
+                const newConversation = new ConversationImpl("0", String(listing.ownerId), listing.id, listing.owner + " - " + listing.title);
                 setCurrentConversation(newConversation);
                 const updatedConversations = [...conversations, newConversation];
                 setConversations(updatedConversations);
@@ -136,7 +137,7 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
                                         {listing.owner}
                                     </p>
                                 </div>
-                                {!isLoggedInUserSameAsListingOwner() && <GenericButton {...createButtonDetails('Contact Renter', "button", () => handleInitiateChatWithRenter(listing.ownerId, listing.owner))} />}
+                                {!isLoggedInUserSameAsListingOwner() && <GenericButton {...createButtonDetails('Contact Renter', "button", () => handleInitiateChatWithRenter(listing))} />}
                             </div>
                         </div>
                     </div>
