@@ -1,9 +1,11 @@
 'use client';
+import { Card, CardContent } from "@/app/components/card/card";
 import VehiclePreviewCard from "@/app/components/card/vehiclePreviewCard";
 import GenericButton, { createButtonDetails } from "@/app/components/fields/genericButton";
 import Rating, { RatingRef } from "@/app/components/fields/rating";
 import TextArea, { createTextareaDetails } from "@/app/components/fields/textarea";
 import ImageLoader from "@/app/components/images/imageLoader";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/app/components/shadcn/carousel";
 import PartialStar from "@/app/components/svg/partialStar";
 import { Feedback, Vehicle, VehicleFilter } from "@/app/services/vehicleService";
 import useAuthStore from "@/app/stores/authStore";
@@ -182,10 +184,27 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
 
     return (
         <div className="flex flex-col items-start justify-center py-6 2xl:px-10 md:px-6 px-4 min-h-screen">
-            <div className="flex flex-row w-full">
-                {listing.pictures.map((url, key) =>
-                    <ImageLoader objectFit={'contain'} key={key} src={url} alt={`picture`} className={`flex flex-col m-6 xl:w-1/2 w-full rounded-xl shadow-lg overflow-hidden`} />)
-                }
+            <div className="flex flex-row w-full relative">
+                <Carousel className="w-full">
+                    <CarouselContent className="w-full">
+                        {listing.pictures.map((url, index) => (
+                            <CarouselItem key={index}>
+                                <ImageLoader
+                                    objectFit={'contain'}
+                                    src={url}
+                                    ratio1to1={true}
+                                    alt={`picture ${index + 1}`}
+                                    className=""
+                                />
+                            </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <div className="absolute top-1/2 -translate-y-1/2 w-full flex">
+                        <CarouselPrevious className="-left-4" />
+                        <div className="flex-grow" />
+                        <CarouselNext className="-right-4" />
+                    </div>
+                </Carousel>
                 <div className="flex flex-col m-6 xl:w-1/2 xl:h-fit items-end">
                     <div className="py-4">
                         <div className="py-8 px-8 max-w-sm mx-auto bg-background border border-solid border-transparent dark:border-gray-600 rounded-xl shadow-lg space-y-2 sm:py-4 sm:flex sm:items-center sm:space-y-0 sm:space-x-6">

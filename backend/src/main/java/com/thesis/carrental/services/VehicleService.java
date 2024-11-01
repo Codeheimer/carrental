@@ -78,7 +78,7 @@ public class VehicleService {
             return this.toResult(v, fileUploadService.fetchByOwnerIds(
                 List.of(v.getId()),
                 List.of(VEHICLE_PICTURE)
-            ));
+            ),true);
         }
         throw new NoResultException("Vehicle not exists");
     }
@@ -145,11 +145,11 @@ public class VehicleService {
     ) {
         return vehicles
             .stream()
-            .map(v -> toResult(v, uploads.get(v.getId())))
+            .map(v -> toResult(v, uploads.get(v.getId()),false))
             .collect(Collectors.toList());
     }
 
-    private VehicleResult toResult(final Vehicle vehicle, final List<FileUpload> pictures) {
+    private VehicleResult toResult(final Vehicle vehicle, final List<FileUpload> pictures, final boolean includeAllPictures) {
         final Participant owner = participantService.findById(vehicle.getOwner());
         final List<FileUpload> fileUploads =
             fileUploadService.fetchByOwnerIds(
@@ -175,7 +175,7 @@ public class VehicleService {
             vehicle.getStatus().toString(),
             vehicle.getPrice(),
             fileUploads.stream().map(FileUpload::getPath).findFirst().orElse(""),
-            pictures.stream().map(FileUpload::getPath).limit(1).collect(Collectors.toList()),
+            pictures.stream().map(FileUpload::getPath).limit(includeAllPictures ? 5 : 1).collect(Collectors.toList()),
             feedbackResponses,
             average
         );
