@@ -1,13 +1,16 @@
 'use client';
 import VehiclePreviewCard from "@/app/components/card/vehiclePreviewCard";
 import GenericButton, { createButtonDetails } from "@/app/components/fields/genericButton";
+import Rating, { RatingRef } from "@/app/components/fields/rating";
+import TextArea, { createTextareaDetails } from "@/app/components/fields/textarea";
 import ImageLoader from "@/app/components/images/imageLoader";
-import { Vehicle, VehicleFilter } from "@/app/services/vehicleService";
+import PartialStar from "@/app/components/svg/partialStar";
+import { Feedback, Vehicle, VehicleFilter } from "@/app/services/vehicleService";
 import useAuthStore from "@/app/stores/authStore";
 import useChatStore, { ConversationImpl } from "@/app/stores/chatStore";
 import useGlobalServiceStore from "@/app/stores/globalServiceStore";
 import useVehicleFilteringStore, { VehicleResult } from "@/app/stores/vehicleFilteringStore";
-import Image from "next/image";
+import { Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -21,6 +24,10 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
     const [renterListings, setRenterListings] = useState<VehicleResult[]>([]);
     const router = useRouter();
     const scrollRef = useRef<HTMLDivElement | null>(null);
+    const [rating, setRating] = useState<number>(0);
+    const formRef = useRef<HTMLFormElement>(null);
+    const ratingRef = useRef<RatingRef>(null);
+
 
     useEffect(() => {
         const handleWheel = (e: WheelEvent) => {
@@ -61,6 +68,10 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
         fetchVehicle();
         filterRenterOtherListings();
     }, [params.vehicleId, vehicleService])
+
+    useEffect(() => {
+        setRating(-1)
+    }, [listing.feedbacks])
 
     const handleInitiateChatWithRenter = (listing: Vehicle) => {
         if (!session.loggedIn) {
@@ -113,12 +124,60 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
     }
 
     const isLoggedInUserSameAsListingOwner = (): boolean => {
-        console.log(`${Number(session.userId ? session.userId : 0)} === ${listing.ownerId}`)
+        //console.log(`${Number(session.userId ? session.userId : 0)} === ${listing.ownerId}`)
         return Number(session.userId ? session.userId : 0) === Number(listing.ownerId);
     }
 
     const handleClickRenter = () => {
         router.push(`/user/profile/${listing.ownerId}`);
+    }
+
+    const handleRateChange = (rate: number): void => {
+        setRating(rate);
+    }
+
+    const submitFeedback = (event: React.FormEvent): void => {
+        event.preventDefault();
+        if (!session.token) {
+            router.push("/login")
+            return;
+        }
+        if (rating < 0) {
+            alert("Please add a rating.");
+            return;
+        }
+        const formData = new FormData(event.target as HTMLFormElement);
+        const jsonData: { [key: string]: any } = {};
+        formData.forEach((value, key) => {
+            jsonData[key] = value;
+        });
+        jsonData["rate"] = rating;
+        jsonData["commenterId"] = session.userId
+        jsonData["vehicleId"] = listing.id;
+        jsonData["commenter"] = session.displayName
+        console.log(JSON.stringify(jsonData));
+        vehicleService.rateVehicle(jsonData, session.token).then((response) => {
+            jsonData["id"] = response.feedbackId;
+            const updatedFeedbacks = [jsonData as Feedback, ...listing.feedbacks]
+            setListing({ ...listing, feedbacks: updatedFeedbacks })
+            formRef?.current?.reset();
+            setRating(-1);
+            ratingRef?.current?.reset();
+        }).catch((error) => {
+            alert(error);
+        });
+    }
+
+    const iterateRating = (rating: number): number[] => {
+        const numbers: number[] = [];
+
+        let current = rating;
+        for (let i = 0; i < 5; i++) {
+            numbers.push(current)
+            current -= 1;
+        }
+
+        return numbers;
     }
 
     return (
@@ -147,6 +206,11 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
                                 <h1 className="lg:text-2xl text-xl font-semibold lg:leading-6 leading-7 mt-2">
                                     {listing.title}
                                 </h1>
+                                <h2 className="flex flex-row m-2">
+                                    {iterateRating(listing.averageRating).map((n, key) =>
+                                        <div className="mx-1" key={key}>{n >= 1 ? <Star fill="yellow" className="text-yellow-400" /> : ((n < 1 && n > 0) ? <PartialStar /> : <Star />)}</div>
+                                    )}
+                                </h2>
                             </div>
                             <div className="py-5">
                                 <span className="font-bold text-xl text-red-600 dark:text-red-400">${listing.price}<span className="text-sm font-normal">/day</span></span>
@@ -161,6 +225,26 @@ export default function VehicleListingModule({ params }: { params: { vehicleId: 
                             {createVehicleTableSpec()}
                         </div>
                     </div>
+                </div>
+            </div>
+            <div className="flex flex-row w-full justify-evenly p-4 rounded-xl shadow-lg min-h-[391px]">
+                <div className="w-[50%]">
+                    <form ref={formRef} onSubmit={submitFeedback}>
+                        <div className="flex flex-row items-center">
+                            <span className="">Rating:</span>
+                            <Rating ref={ratingRef} onChange={handleRateChange} value={rating} className="m-3" label="" name="" />
+                        </div>
+                        <TextArea {...createTextareaDetails("Comment", "comment", true, false, 10, 100, "Enter Comment here...", "w-400")} />
+                        {!isLoggedInUserSameAsListingOwner() && <GenericButton {...createButtonDetails("Submit", "submit")} />}
+                    </form>
+                </div>
+                <div className="w-[50%]  flex flex-col max-h-[380px] overflow-y-auto">
+                    {listing.feedbacks.map((feedback) =>
+                        <div className="w-[90%] m-5 p-5 border border-solid border-gray-600 rounded-lg" key={feedback.id}>
+                            <div><Rating disabled={true} value={feedback.rate + 1} className="m-3" label="" name="" /></div>
+                            <div className="m-3 text-sm">{feedback.comment}</div>
+                            <div className="m-3">{feedback.commenter}</div>
+                        </div>)}
                 </div>
             </div>
             <div className="flex flex-col w-full p-4 rounded-xl shadow-lg min-h-[391px]">

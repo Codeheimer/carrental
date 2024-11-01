@@ -1,9 +1,11 @@
 package com.thesis.carrental.controllers;
 
+import com.thesis.carrental.dtos.RateRequest;
 import com.thesis.carrental.dtos.RentRequest;
 import com.thesis.carrental.dtos.VehicleSaveResponse;
 import com.thesis.carrental.dtos.VehicleUpdateRequest;
 import com.thesis.carrental.dtos.VehicleUpdateResponse;
+import com.thesis.carrental.entities.Feedback;
 import com.thesis.carrental.entities.Vehicle;
 import com.thesis.carrental.filters.VehicleFilter;
 import com.thesis.carrental.services.FileUploadService;
@@ -134,6 +136,16 @@ public class VehicleController {
             return ResponseEntity.ok(new VehicleSaveResponse("Vehicle successfully rented to user.",true));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(new VehicleSaveResponse(e.getMessage(),false));
+        }
+    }
+
+    @PostMapping("/rate")
+    public ResponseEntity<?> rateVehicle(@RequestBody final RateRequest rateRequest){
+        try{
+            final Feedback result = vehicleService.rateVehicle(rateRequest.getVehicleId(), rateRequest.getCommenterId(), rateRequest.getRate(),rateRequest.getComment());
+            return ResponseEntity.ok(new VehicleSaveResponse("Rate sent.",true,result.getId()));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new VehicleSaveResponse(e.getMessage(),false,0));
         }
     }
 }

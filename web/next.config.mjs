@@ -14,7 +14,8 @@ const nextConfig = {
         ADMIN_DEV_MODE: process.env.ADMIN_DEV_MODE,
         GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
         UTIL_ADDRESS_JSON_UPLOAD: process.env.UTIL_ADDRESS_JSON_UPLOAD,
-        RENT_VEHICLE: process.env.RENT_VEHICLE
+        RENT_VEHICLE: process.env.RENT_VEHICLE,
+        RATE_VEHICLE: process.env.RATE_VEHICLE
     },
     images: {
         remotePatterns: [

@@ -19,7 +19,9 @@ export interface IVehicle {
     ownerId: number,
     price: number,
     pictures: string[],
-    ownerProfile: string
+    ownerProfile: string,
+    feedbacks: Feedback[],
+    averageRating:number
 }
 
 export class Vehicle implements IVehicle {
@@ -39,7 +41,9 @@ export class Vehicle implements IVehicle {
         public ownerId: number = 0,
         public price: number = 0.00,
         public pictures: string[] = [],
-        public ownerProfile: string = ""
+        public ownerProfile: string = "",
+        public feedbacks: Feedback[] = [],
+        public averageRating:number = 0
     ) {
 
     }
@@ -47,7 +51,8 @@ export class Vehicle implements IVehicle {
 
 export interface VehicleSaveResponse {
     message: string,
-    success: boolean
+    success: boolean,
+    feedbackId:number
 }
 
 export interface IVehicleFilter {
@@ -68,12 +73,20 @@ export interface IVehicleFilter {
     userLocation?: Coordinate | null
 }
 
+export interface Feedback {
+    id: number,
+    rate: number,
+    comment: string,
+    commenter: string
+}
+
 export interface VehicleService {
     save: (data: FormData, token: string | null) => Promise<VehicleSaveResponse>;
     filter: (filter: VehicleFilter, token?: string | null) => Promise<VehicleFilter>;
     fetch: (id: string) => Promise<Vehicle>;
     updateStatus: (newStatus: string, vehicleId: number) => Promise<VehicleSaveResponse>;
     rentVehicle: (conversationId: number, vehicleId: number, renterId: number, token: string) => Promise<VehicleSaveResponse>;
+    rateVehicle: (data: { [key: string]: any }, token: string) => Promise<VehicleSaveResponse>;
 
 }
 
@@ -181,6 +194,23 @@ export class VehicleServiceImpl extends BaseService implements VehicleService {
                 method: 'POST',
                 headers: this.getHeaders(token),
                 data: { vehicle: vehicleId, renter: renterId, conversationId: conversationId }
+            }
+            const response = await this.doRequest<VehicleSaveResponse>(URL, axiosConfig);
+
+            return response;
+        } catch (error) {
+            console.error(`error: ${error}`);
+            throw error;
+        }
+    }
+
+    public rateVehicle = async (data: { [key: string]: any }, token: string): Promise<VehicleSaveResponse> => {
+        try {
+            const URL = `${this.getBaseURL()}${process.env.RATE_VEHICLE}`;
+            const axiosConfig: AxiosRequestConfig = {
+                method: 'POST',
+                headers: this.getHeaders(token),
+                data: data
             }
             const response = await this.doRequest<VehicleSaveResponse>(URL, axiosConfig);
 
