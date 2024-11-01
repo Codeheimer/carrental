@@ -41,6 +41,8 @@ public class EmailService {
             LOG.info("Successfully sent email to {} , template: {} , subject: {} ",to,template,subject);
         }catch (MessagingException e){
             LOG.error("Error processing message ",e);
+        }catch (Exception e){
+            LOG.error("ERROR IN EMAIL ",e);
         }
     }
 }

@@ -29,6 +29,11 @@ export default function NewVehicle() {
             return;
         }
 
+        if(location === null){
+            alert("Please pin location of vehicle.");
+            return;
+        }
+
         formData.forEach((value, key) => {
             jsonData[key] = value;
         });

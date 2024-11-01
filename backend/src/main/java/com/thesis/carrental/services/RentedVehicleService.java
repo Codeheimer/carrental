@@ -48,4 +48,8 @@ public class RentedVehicleService {
     public RentedVehicle findRentDetails(final Vehicle vehicle){
         return rentedVehicleRepository.findByVehicle(vehicle.getId());
     }
+
+    public void delete(final RentedVehicle rentedVehicle){
+        rentedVehicleRepository.delete(rentedVehicle);
+    }
 }
