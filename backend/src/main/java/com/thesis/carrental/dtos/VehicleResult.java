@@ -19,6 +19,8 @@ public record VehicleResult(
     Double price,
 
     String ownerProfile,
-    List<String> pictures
+    List<String> pictures,
+    List<FeedbackResponse> feedbacks,
+    double averageRating
 ) {
 }

@@ -47,7 +47,7 @@ export default function NewVehicle() {
 
         vehicleService.save(data, authenticationService.getToken()).then((response) => {
             if (response.success) {
-                router.push("/")
+                router.push("/car-catalogue")
             } else {
                 alert(response.message);
             }

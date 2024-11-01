@@ -17,7 +17,7 @@ export abstract class BaseService {
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.log(error);
-                throw new Error(`Error making request: ${error.response?.status}`);
+                throw new Error(`${error}`);
             } else {
                 throw new Error(`Unknown error occurred`);
             }

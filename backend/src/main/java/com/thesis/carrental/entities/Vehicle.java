@@ -2,10 +2,13 @@ package com.thesis.carrental.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thesis.carrental.enums.VehicleStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 import java.util.ArrayList;
@@ -43,6 +46,9 @@ public class Vehicle extends PersistentEntity {
 
     @Column(name="daily_price")
     private double price;
+
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Feedback> feedbacks;
 
     @Transient
     @JsonIgnore
@@ -158,5 +164,13 @@ public class Vehicle extends PersistentEntity {
 
     public void setImages(final List<String> images) {
         this.images = images;
+    }
+
+    public List<Feedback> getFeedbacks() {
+        return feedbacks;
+    }
+
+    public void setFeedbacks(final List<Feedback> feedbacks) {
+        this.feedbacks = feedbacks;
     }
 }

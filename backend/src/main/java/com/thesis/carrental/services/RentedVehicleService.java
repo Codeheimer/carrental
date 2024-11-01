@@ -44,4 +44,8 @@ public class RentedVehicleService {
             websocketController.broadcastVehicleRent(conversationId, vehicle, vehicle.getOwner(), renterId);
         }
     }
+
+    public RentedVehicle findRentDetails(final Vehicle vehicle){
+        return rentedVehicleRepository.findByVehicle(vehicle.getId());
+    }
 }

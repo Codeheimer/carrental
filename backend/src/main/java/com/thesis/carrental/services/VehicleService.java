@@ -1,17 +1,23 @@
 package com.thesis.carrental.services;
 
 import com.thesis.carrental.dtos.Coordinate;
+import com.thesis.carrental.dtos.FeedbackResponse;
 import com.thesis.carrental.dtos.VehicleResult;
 import com.thesis.carrental.dtos.VehicleUpdateRequest;
+import com.thesis.carrental.emailing.EmailTemplate;
+import com.thesis.carrental.entities.Feedback;
 import com.thesis.carrental.entities.FileUpload;
 import com.thesis.carrental.entities.Participant;
+import com.thesis.carrental.entities.RentedVehicle;
 import com.thesis.carrental.entities.Vehicle;
 import com.thesis.carrental.enums.VehicleStatus;
 import com.thesis.carrental.filters.VehicleFilter;
+import com.thesis.carrental.repositories.FeedbackRepository;
 import com.thesis.carrental.repositories.VehicleRepository;
 import com.thesis.carrental.utils.DisplayUtil;
 import com.thesis.carrental.utils.DistanceCalculator;
 import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +25,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.thesis.carrental.emailing.EmailTemplates.TEMPLATES;
+import static com.thesis.carrental.enums.EmailTypes.VEHICLE_FEEDBACK;
 import static com.thesis.carrental.enums.FileUploadType.*;
 
 @Service
@@ -38,14 +48,27 @@ public class VehicleService {
 
     private final FileUploadService fileUploadService;
 
+    private final FeedbackRepository feedbackRepository;
+
+    private final EmailService emailService;
+
+    private final RentedVehicleService rentedVehicleService;
+
     @Autowired
     public VehicleService(
-        VehicleRepository vehicleRepository,
-        ParticipantService participantService, FileUploadService fileUploadService
+        final VehicleRepository vehicleRepository,
+        final ParticipantService participantService,
+        final FileUploadService fileUploadService,
+        final FeedbackRepository feedbackRepository,
+        final EmailService emailService,
+        final RentedVehicleService rentedVehicleService
     ) {
         this.vehicleRepository = vehicleRepository;
         this.participantService = participantService;
         this.fileUploadService = fileUploadService;
+        this.feedbackRepository = feedbackRepository;
+        this.emailService = emailService;
+        this.rentedVehicleService = rentedVehicleService;
     }
 
     public VehicleResult find(final Long id) {
@@ -133,6 +156,9 @@ public class VehicleService {
                 List.of(owner.getId()),
                 List.of(PROFILE_PICTURE)
             );
+
+        final List<FeedbackResponse> feedbackResponses = vehicle.getFeedbacks().stream().sorted(Comparator.comparing(Feedback::getCreationDate).reversed()).map(this::toFeedbackResponse).toList();
+        final double average = feedbackResponses.stream().mapToInt(FeedbackResponse::rate).average().orElse(0);
         return new VehicleResult(
             vehicle.getId(),
             vehicle.getMake(),
@@ -149,8 +175,14 @@ public class VehicleService {
             vehicle.getStatus().toString(),
             vehicle.getPrice(),
             fileUploads.stream().map(FileUpload::getPath).findFirst().orElse(""),
-            pictures.stream().map(FileUpload::getPath).limit(1).collect(Collectors.toList())
+            pictures.stream().map(FileUpload::getPath).limit(1).collect(Collectors.toList()),
+            feedbackResponses,
+            average
         );
+    }
+
+    private FeedbackResponse toFeedbackResponse(final Feedback feedback){
+        return new FeedbackResponse(feedback.getId(),feedback.getStars(),feedback.getComment(),feedback.getCommenter().getDisplayName());
     }
 
     public void save(final Vehicle vehicle, final Long owner) {
@@ -159,9 +191,39 @@ public class VehicleService {
         vehicleRepository.save(vehicle);
     }
 
+    @Transactional
     public void updateStatus(final VehicleUpdateRequest request) {
         final Vehicle vehicle = this.vehicleRepository.findById(request.vehicleId()).orElseThrow();
         vehicle.setStatus(request.status());
+        doActionPerStatus(vehicle);
         vehicleRepository.save(vehicle);
+    }
+
+    private void doActionPerStatus(final Vehicle vehicle){
+        switch (vehicle.getStatus()){
+            case AVAILABLE -> {
+                final RentedVehicle rv = rentedVehicleService.findRentDetails(vehicle);
+                final EmailTemplate template = TEMPLATES.get(VEHICLE_FEEDBACK);
+                final Map<String,Object> fields = new HashMap<>();
+                fields.put("customerName", rv.getParticipant().getDisplayName());
+                fields.put("makeModel", vehicle.getMake() + " "+vehicle.getModel());
+                fields.put("plateNumber", vehicle.getPlateNumber());
+                //http://localhost:3000/vehicle/listing/
+                fields.put("feedbackUrl","http://localhost:3000/vehicle/listing/"+vehicle.getId());
+                emailService.send(rv.getParticipant().getEmail(),template.title(),template.path(),fields);
+            }
+            default -> throw new RuntimeException("Status invalid");
+        }
+    }
+
+    public Feedback rateVehicle(final long vehicleId, final long commenterId, final int stars, final String comment){
+        final Feedback feedback = new Feedback();
+        final Participant participant = participantService.findById(commenterId);
+        feedback.setVehicle(vehicleRepository.findById(vehicleId).orElseThrow());
+        feedback.setCommenter(participant);
+        feedback.setComment(comment);
+        feedback.setStars(stars);
+        feedbackRepository.save(feedback);
+        return feedback;
     }
 }

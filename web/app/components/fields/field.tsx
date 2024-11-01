@@ -2,5 +2,7 @@ export interface Field {
     label: string,
     name: string,
     isRequired?: boolean,
-    isHidden?: boolean
+    isHidden?: boolean,
+    className?: string,
+    disabled?: boolean
 }
