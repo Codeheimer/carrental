@@ -1,45 +1,38 @@
 'use client';
 
 import { useState } from "react";
-import AlertError, { defaultErrorDetails, ErrorDetailsImpl } from "../components/alerts/alertError";
 import { useRouter } from "next/navigation";
 import Textbox, { TextboxDetails } from "../components/fields/textbox";
 import GenericButton, { ButtonDetails } from "../components/fields/genericButton";
 import useGlobalServiceStore from "../stores/globalServiceStore";
-import { LoginCredentials } from "../services/authenticationService";
 import useAuthStore from "../stores/authStore";
-import useChatStore, { ConversationImpl } from "../stores/chatStore";
+import ErrorMessage, { ErrorDetails } from "../components/alerts/errorMessage";
+import { LoginCredentials } from "../services/authenticationService";
 
 export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState(defaultErrorDetails);
+    const [error, setError] = useState<ErrorDetails | null>();
     const { authenticationService } = useGlobalServiceStore();
     const { login } = useAuthStore();
 
     const attemptLogin = (event: React.FormEvent): void => {
         event.preventDefault();
-        setError(defaultErrorDetails);
-
-        authenticationService.generateToken({ email, password } as LoginCredentials).then((response) => {
-            const token = response.token;
-            if (token) {
+        setError(null);
+        authenticationService.generateToken({ email, password } as LoginCredentials)
+            .then((response) => {
+                const token = response.token;
                 authenticationService.saveToken(token);
                 login(authenticationService.getToken(), response.id, response.roles, response.admin, response.displayName);
                 router.push("/")
-            } else {
-                showError("Error", response.message)
-            }
-        });
+            }).catch((error) => {
+                showError("Login Failed", error.message);
+            });
     }
 
     const showError = (title: string, description: string): void => {
-        setError(new ErrorDetailsImpl(title, description));
-    }
-
-    const hasError = (): boolean => {
-        return error.description.length > 0 && error.title.length > 0
+        setError({ title: title, message: description } as ErrorDetails);
     }
 
     const handleRegister = (): void => {
@@ -78,7 +71,7 @@ export default function LoginPage() {
         <div className="flex items-center flex-col border-1 m-6 border-solid border-gray-600">
             <form onSubmit={attemptLogin}>
                 <div className="flex items-center flex-col m-6">
-                    {hasError() && <AlertError {...error} />}
+                    {error && <ErrorMessage {...error} />}
                     <Textbox {...emailField} />
                     <Textbox {...passwordField} />
                     <div className="my-4 flex flex-row">

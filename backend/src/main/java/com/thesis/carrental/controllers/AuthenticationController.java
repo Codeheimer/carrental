@@ -70,27 +70,28 @@ public class AuthenticationController {
                 return ResponseEntity.ok(new AuthenticationResponse(
                     String.valueOf(participant.getId()),
                     jwtService.generateToken(login),
-                    null,
                     isAdmin(participant.getEmail()),
                     participant.getRolesEnum(),
-                    participant.getDisplayName()));
+                    participant.getDisplayName(),
+                    true,
+                    "Login Success"));
             } else {
                 return ResponseEntity.badRequest().body(new AuthenticationResponse(
                     String.valueOf(0),
                     "",
-                    "Login Credentials Invalid",
                     false,
                     emptyList(),
-                    ""));
+                    "",
+                    false,
+                    "Login Credentials Invalid"));
             }
         }catch (Exception e){
             return ResponseEntity.badRequest().body(new AuthenticationResponse(
                 String.valueOf(0),
                 "",
-                "Error in authentication, reason: "+e.getMessage(),
                 false,
                 emptyList(),
-                ""));
+                "",false,e.getMessage()));
         }
     }
 

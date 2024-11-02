@@ -10,15 +10,17 @@ import Textbox, { createTextboxDetails } from "@/app/components/fields/textbox";
 import TextArea, { createTextareaDetails } from "@/app/components/fields/textarea";
 import GenericButton, { createButtonDetails } from "@/app/components/fields/genericButton";
 import GoogleMap, { Coordinate } from "@/app/components/google/maps/googleMap";
+import ErrorMessage, { ErrorDetails } from "@/app/components/alerts/errorMessage";
 
 export default function NewVehicle() {
-
+    const [error, setError] = useState<ErrorDetails | null>(null);
     const { vehicleService, authenticationService } = useGlobalServiceStore();
     const [images, setImages] = useState<FileList | null>(null)
     const router = useRouter();
     const [location, setLocation] = useState<Coordinate | null>(null)
 
     const save = (event: React.FormEvent): void => {
+        setError(null);
         event.preventDefault();
         const formData = new FormData(event.target as HTMLFormElement);
         const jsonData: { [key: string]: any } = {};
@@ -29,7 +31,7 @@ export default function NewVehicle() {
             return;
         }
 
-        if(location === null){
+        if (location === null) {
             alert("Please pin location of vehicle.");
             return;
         }
@@ -38,7 +40,7 @@ export default function NewVehicle() {
             jsonData[key] = value;
         });
 
-        if(location){
+        if (location) {
             jsonData["latitude"] = location.latitude;
             jsonData["longitude"] = location.longitude;
         }
@@ -51,11 +53,9 @@ export default function NewVehicle() {
         });
 
         vehicleService.save(data, authenticationService.getToken()).then((response) => {
-            if (response.success) {
-                router.push("/car-catalogue")
-            } else {
-                alert(response.message);
-            }
+            router.push("/car-catalogue");
+        }).catch((error) => {
+            setError({ title: "Error in Saving", message: error.message })
         });
     };
 
@@ -76,6 +76,7 @@ export default function NewVehicle() {
                 <div className="w-full mb-4 p-4 rounded-lg">
                     <h1 className="text-2xl font-bold text-center">Vehicle Details</h1>
                 </div>
+                {error && <ErrorMessage {...error} />}
                 <div className="flex flex-row justify-between items-stretch w-full">
                     <div className="m-2 p-2 flex flex-col h-full w-1/2 items-start">
                         <div className="m-2 p-2"><Textbox {...createTextboxDetails("Price", "price", true)} /></div>

@@ -2,6 +2,7 @@ import { AxiosRequestConfig } from 'axios';
 import { BaseService } from './baseService';
 import { VehicleResult } from '../stores/vehicleFilteringStore';
 import { Coordinate } from '../components/google/maps/googleMap';
+import { VehicleSaveResponse } from '../components/payloads/payloads';
 
 export interface IVehicle {
     id: number
@@ -21,7 +22,7 @@ export interface IVehicle {
     pictures: string[],
     ownerProfile: string,
     feedbacks: Feedback[],
-    averageRating:number
+    averageRating: number
 }
 
 export class Vehicle implements IVehicle {
@@ -43,18 +44,11 @@ export class Vehicle implements IVehicle {
         public pictures: string[] = [],
         public ownerProfile: string = "",
         public feedbacks: Feedback[] = [],
-        public averageRating:number = 0
+        public averageRating: number = 0
     ) {
 
     }
 }
-
-export interface VehicleSaveResponse {
-    message: string,
-    success: boolean,
-    feedbackId:number
-}
-
 export interface IVehicleFilter {
     search?: string;
     make?: string;
@@ -131,7 +125,6 @@ export class VehicleServiceImpl extends BaseService implements VehicleService {
 
             return response;
         } catch (error) {
-            console.error('error:', error);
             throw error;
         }
     };

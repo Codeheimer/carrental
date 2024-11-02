@@ -1,7 +1,6 @@
 'use client';
 
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import AlertError, { defaultErrorDetails, ErrorDetailsImpl } from "../components/alerts/alertError";
 import Dropdown, { DropdownDetails } from "../components/fields/dropdown";
 import GenericButton, { ButtonDetails } from "../components/fields/genericButton";
 import Textbox, { TextboxDetails } from "../components/fields/textbox";
@@ -10,9 +9,10 @@ import { useRouter } from "next/navigation";
 import FileUpload, { FileuploadDetails } from "../components/fields/fileUpload";
 import Checkbox, { CheckboxDetails } from "../components/fields/checkbox";
 import { LookUp } from "../services/utilityService";
+import ErrorMessage, { ErrorDetails } from "../components/alerts/errorMessage";
 
 export default function RegistrationPage() {
-    const [error, setError] = useState(defaultErrorDetails);
+    const [error, setError] = useState<ErrorDetails | null>(null);
     const alertError = useRef<HTMLDivElement>(null);
     const { registrationService, utilityService } = useGlobalServiceStore();
     const formRef = useRef<HTMLFormElement>(null);
@@ -33,7 +33,7 @@ export default function RegistrationPage() {
     const [selectedBarangay, setSelectedBarangay] = useState<string>('');
 
     useEffect(() => {
-        if (error.hasError() && alertError.current) {
+        if (error && alertError.current) {
             alertError.current.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
@@ -63,14 +63,14 @@ export default function RegistrationPage() {
         });
 
         if (jsonData.password !== jsonData.passwordAgain) {
-            setError(new ErrorDetailsImpl("Error", "Password does not match."));
+            setError({ title: "Error", message: "Password does not match." });
             return;
         }
 
         jsonData['businessOwner'] = jsonData['businessOwner'] === 'on' ? true : false;
 
         const data = new FormData();
-        
+
         data.append('registrationData', new Blob([JSON.stringify(jsonData)], { type: 'application/json' }))
         if (identification) {
             console.log("adding identification")
@@ -282,7 +282,7 @@ export default function RegistrationPage() {
         <form ref={formRef} onSubmit={register} className="flex justify-center items-center">
             <div className="flex justify-center items-center flex-col m-6 h-full w-3/4">
                 <div>Register</div>
-                {error.hasError() && <AlertError ref={alertError} {...error} />}
+                {error && <ErrorMessage ref={alertError} {...error} />}
                 <Textbox {...firstName} />
                 <Textbox {...lastName} />
                 <Textbox {...birthday} />
