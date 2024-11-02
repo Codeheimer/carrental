@@ -203,6 +203,9 @@ public class VehicleService {
         switch (vehicle.getStatus()){
             case AVAILABLE -> {
                 final RentedVehicle rv = rentedVehicleService.findRentDetails(vehicle);
+                if(Objects.isNull(rv)){
+                    return;
+                }
                 final EmailTemplate template = TEMPLATES.get(VEHICLE_FEEDBACK);
                 final Map<String,Object> fields = new HashMap<>();
                 fields.put("customerName", rv.getParticipant().getDisplayName());
@@ -211,7 +214,10 @@ public class VehicleService {
                 //http://localhost:3000/vehicle/listing/
                 fields.put("feedbackUrl","http://localhost:3000/vehicle/listing/"+vehicle.getId());
                 emailService.send(rv.getParticipant().getEmail(),template.title(),template.path(),fields);
+                rentedVehicleService.delete(rv);
             }
+            case MAINTENANCE -> {}
+            case RENTED -> {}
             default -> throw new RuntimeException("Status invalid");
         }
     }

@@ -21,7 +21,7 @@ export interface AdminService {
     updateStatus: (token: string, id: string, status: string) => Promise<void>,
     toggleDeactivate: (token: string, id: string) => Promise<void>,
     changePassword: (token: string, id: string, newPassword: string) => Promise<void>,
-    uploadAddressJson: (token: string, form: FormData) => Promise<void>
+    uploadAddressJson: (form: FormData) => Promise<void>
 }
 
 export class AdminServiceImpl extends BaseService implements AdminService {
@@ -71,11 +71,11 @@ export class AdminServiceImpl extends BaseService implements AdminService {
         return Promise.resolve();
     }
 
-    public uploadAddressJson = (token: string, form: FormData): Promise<void> => {
+    public uploadAddressJson = (form: FormData): Promise<void> => {
         const URL = `${this.getBaseURL()}${process.env.UTIL_ADDRESS_JSON_UPLOAD}`;
         this.doRequest<void>(URL, {
             method: 'POST',
-            headers: this.getHeaders(token, { name: 'Content-Type', value: 'multipart/form-data' }),
+            headers: this.getHeaders(null, { name: 'Content-Type', value: 'multipart/form-data' }),
             data: form
         });
         return Promise.resolve();

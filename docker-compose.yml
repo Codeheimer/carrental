@@ -19,3 +19,40 @@ services:
     ports:
       - "1025:1025" #SMTP
       - "8025:8025" #UI
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - mailhog
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/carrentaldb
+      - SPRING_DATASOURCE_USERNAME=carrental
+      - SPRING_DATASOURCE_PASSWORD=carrental
+      - SPRING_MAIL_HOST=mailhog
+      - SPRING_MAIL_PORT=1025
+      - SPRING_MAIL_USERNAME=
+      - SPRING_MAIL_PASSWORD=
+    command: >
+      /bin/sh -c "
+      until nc -z db 5432; do
+        echo 'Waiting for the database...'
+        sleep 2;
+      done;
+      echo 'Database is up! Starting the application...';
+      java -jar app.jar"
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    container_name: web
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend

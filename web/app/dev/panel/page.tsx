@@ -18,9 +18,9 @@ export default function DevPanel() {
     }
     const handleSubmitAddressJson = (): void => {
         const formData = new FormData();
-        if (addressJson && session.token) {
+        if (addressJson) {
             formData.append("addressJson", addressJson);
-            adminService.uploadAddressJson(session.token, formData);
+            adminService.uploadAddressJson(formData);
         }
     }
     return (<div className="flex flex-col w-full h-full justify-center items-center container mx-auto p-6">

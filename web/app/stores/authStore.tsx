@@ -15,8 +15,10 @@ interface Session {
 }
 
 const defaultLinks: HeadLink[] = [{ label: "Home", path: "/" },
-    {label:"Catalogue", path:"/car-catalogue"}
+{ label: "Catalogue", path: "/car-catalogue" },
+{ path: "/dev/panel", label: "Dev Panel" }
 ];
+
 export class SessionImpl implements Session {
   constructor(
     public loggedIn: boolean = false,
@@ -37,10 +39,6 @@ interface AuthStore {
 }
 
 const useAuthStore = create<AuthStore>((set) => {
-  const devModeSession = (session: SessionImpl): SessionImpl => {
-    return { ...session, headerLinks: [...session.headerLinks, { path: "/dev/panel", label: "Dev Panel" }] }
-  }
-
   return {
     session: new SessionImpl(),
     login: (token: string | null, userId: string, permissions: UserRoles[], admin: boolean, displayName: string) => {
@@ -51,21 +49,21 @@ const useAuthStore = create<AuthStore>((set) => {
           links.push({ label: "Add your Car", path: "/vehicle/new" });
           links.push({ label: "My Listings", path: "/admin/listings" });
         }
-        if(permissions.includes(UserRoles.ROLE_RENTEE)){
+        if (permissions.includes(UserRoles.ROLE_RENTEE)) {
           links.push({ label: "My Rents", path: "/admin/rents" });
         }
         if (permissions.includes(UserRoles.ADMIN)) {
           links.push({ label: "Users", path: "/admin/accounts" });
         }
-        const devMode: boolean = Boolean(process.env.ADMIN_DEV_MODE);
+        //const devMode: boolean = Boolean(process.env.ADMIN_DEV_MODE);
         //console.log(`dev mode: ${devMode ? "On" : "Off"}`);
 
-        const session: SessionImpl = new SessionImpl(true, token, links, userId, admin, permissions, displayName, devMode);
-        if (devMode) {
-          return { session: devModeSession(session) };
-        } else {
+        const session: SessionImpl = new SessionImpl(true, token, links, userId, admin, permissions, displayName/*, devMode*/);
+        //if (devMode) {
+        //  return { session: devModeSession(session) };
+        //} else {
           return { session: session };
-        }
+        //}
       })
     },
     logout: () => {
