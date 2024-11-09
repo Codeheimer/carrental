@@ -16,8 +16,8 @@ export abstract class BaseService {
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                console.log(error);
-                throw new Error(`${error}`);
+                const message = error.response?.data?.message || 'Unknown error occurred';
+                throw new Error(message);
             } else {
                 throw new Error(`Unknown error occurred`);
             }

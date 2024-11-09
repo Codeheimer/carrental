@@ -1,4 +1,5 @@
 import { UserRoles } from '../components/enums/userRoles';
+import { AuthenticationResponse } from '../components/payloads/payloads';
 import { BaseService } from './baseService';
 
 const TOKEN_KEY = "USER_TOKEN";
@@ -15,15 +16,6 @@ export interface LoginCredentials {
     email: string
     password: string
     rememberMe?: boolean;
-}
-
-export interface AuthenticationResponse {
-    id: string,
-    token: string,
-    message: string,
-    admin: boolean,
-    roles: UserRoles[],
-    displayName: string
 }
 
 export const defaultLoginCredentials = {
@@ -85,14 +77,16 @@ export class AuthenticationServiceImpl extends BaseService implements Authentica
     }
 
     public generateToken = async (credentials: LoginCredentials): Promise<AuthenticationResponse> => {
-        const URL = `${this.getBaseURL()}${this.GENERATE_TOKEN}`;
-        const response = await this.doRequest<AuthenticationResponse>(URL, {
-            method: 'POST',
-            headers: this.getHeaders(),
-            data: { ...credentials }
-
-        });
-
-        return response;
+        try {
+            const URL = `${this.getBaseURL()}${this.GENERATE_TOKEN}`;
+            const response = await this.doRequest<AuthenticationResponse>(URL, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                data: { ...credentials }
+            });
+            return response;
+        } catch (error) {
+            throw error;
+        }
     }
 }
